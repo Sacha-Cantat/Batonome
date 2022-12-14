@@ -105,7 +105,12 @@ class App(customtkinter.CTk):
             print(self.listeGpsPoints)
 
     def initZone(self, event=None):
-        self.initZoneValue = True
+        if(self.initZoneValue == False):
+            self.initZoneValue = True
+            self.button_1.configure(text="Valider",command=self.initZone, fg_color="red")
+        else:
+            self.initZoneValue = False
+            self.button_1.configure(text="Zone Nav",command=self.initZone, fg_color="blue")
         
 
     def clear_marker_event(self):
