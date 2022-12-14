@@ -17,10 +17,14 @@ class App(tkinter.Tk):
         #Taille de l'application
         self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
 
+        #InitZone
+        self.initZoneValue = False
+        self.listeGpsPoints = []
+
         #Fermeture de l'application
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         #Recherche
-        self.bind("<Return>", self.search)
+        #self.bind("<Return>", self.search)
 
         #Si le système d'exploitation est Mac OS
         if sys.platform == "darwin":
@@ -39,7 +43,7 @@ class App(tkinter.Tk):
         self.search_bar.focus()
 
         #Bouton de recherche
-        self.search_bar_button = tk.Button(master=self, width=8, text="Search", command=self.search)
+        self.search_bar_button = tk.Button(master=self, width=8, text="Init Zone", command=self.initZone)
         self.search_bar_button.grid(row=0, column=1, pady=10, padx=10)
 
         #Barre de zoom
@@ -50,17 +54,25 @@ class App(tkinter.Tk):
         self.map_view.grid(row=1, column=0, columnspan=3, sticky="nsew")
         self.map_view.set_position(48.860381, 2.338594)  # Paris, France
     
-        self.map_view.add_right_click_menu_command(label="Add Marker", command=self.add_marker_event,pass_coords=True)
+        self.map_view.add_left_click_map_command(self.left_click_event)
     
-    def add_marker_event(self, coords):
-        print("Add marker:", coords)
-        self.new_marker = self.map_view.set_marker(coords[0], coords[1], text="new marker")
+
+    def left_click_event(self,coordinates_tuple):
+        print(self.initZoneValue)
+        
+        if self.initZoneValue:
+            print("Left click event with coordinates:", coordinates_tuple)
+            self.map_view.set_marker(coordinates_tuple[0], coordinates_tuple[1])
+            self.listeGpsPoints.append(coordinates_tuple)
+            print(self.listeGpsPoints)
+    
+
     
 
 
     
-    def search(self, event=None):
-        pass
+    def initZone(self, event=None):
+        self.initZoneValue = True
 
     def zoom(self, event=None):
         pass
