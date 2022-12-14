@@ -1,89 +1,135 @@
-import sys
-import tkinter as tk
-import tkinter.messagebox
+import customtkinter
 from tkintermapview import TkinterMapView
 
-class App(tkinter.Tk):
+customtkinter.set_default_color_theme("blue")
 
-    APP_NAME = "map_view_demo.py"
+
+class App(customtkinter.CTk):
+
+    APP_NAME = "Batonome GUI"
     WIDTH = 800
-    HEIGHT = 750
+    HEIGHT = 500
 
     def __init__(self, *args, **kwargs):
-        tkinter.Tk.__init__(self, *args, **kwargs)
-        
-        #Nom de l'application
-        self.title(self.APP_NAME)
-        #Taille de l'application
-        self.geometry(f"{self.WIDTH}x{self.HEIGHT}")
+        super().__init__(*args, **kwargs)
 
+        self.title(App.APP_NAME)
+        self.geometry(str(App.WIDTH) + "x" + str(App.HEIGHT))
+        self.minsize(App.WIDTH, App.HEIGHT)
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.bind("<Command-q>", self.on_closing)
+        self.bind("<Command-w>", self.on_closing)
+        self.createcommand('tk::mac::Quit', self.on_closing)
+
+        self.marker_list = []
         #InitZone
         self.initZoneValue = False
         self.listeGpsPoints = []
 
-        #Fermeture de l'application
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
-        #Recherche
-        #self.bind("<Return>", self.search)
+        # ============ create two CTkFrames ============
 
-        #Si le système d'exploitation est Mac OS
-        if sys.platform == "darwin":
-            self.bind("<Command-q>", self.on_closing)
-            self.bind("<Command-w>", self.on_closing)
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
-        #Configuration de la grille
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=0)
-        self.grid_columnconfigure(2, weight=0)
-        self.grid_rowconfigure(1, weight=1)
+        self.frame_left = customtkinter.CTkFrame(master=self, width=150, corner_radius=0, fg_color=None)
+        self.frame_left.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
 
-        #Barre de recherche
-        self.search_bar = tk.Entry(self, width=50)
-        self.search_bar.grid(row=0, column=0, pady=10, padx=10, sticky="we")
-        self.search_bar.focus()
+        self.frame_right = customtkinter.CTkFrame(master=self, corner_radius=0)
+        self.frame_right.grid(row=0, column=1, rowspan=1, pady=0, padx=0, sticky="nsew")
 
-        #Bouton de recherche
-        self.search_bar_button = tk.Button(master=self, width=8, text="Init Zone", command=self.initZone)
-        self.search_bar_button.grid(row=0, column=1, pady=10, padx=10)
+        # ============ frame_left ============
 
-        #Barre de zoom
-        self.zoom_bar = tk.Scale(self, from_=4, to=20, orient=tkinter.HORIZONTAL, command=self.zoom)
-        self.zoom_bar.grid(row=0, column=2, pady=10, padx=10)
+        self.frame_left.grid_rowconfigure(2, weight=1)
 
-        self.map_view = TkinterMapView(width=self.WIDTH, height=600,corner_radius=0)
-        self.map_view.grid(row=1, column=0, columnspan=3, sticky="nsew")
-        self.map_view.set_position(48.860381, 2.338594)  # Paris, France
-    
-        self.map_view.add_left_click_map_command(self.left_click_event)
-    
+        self.button_1 = customtkinter.CTkButton(master=self.frame_left,text="Zone Nav", command=self.initZone)
+        self.button_1.grid(pady=(20, 0), padx=(20, 20), row=0, column=0)
+
+        self.button_2 = customtkinter.CTkButton(master=self.frame_left,
+                                                text="Clear Markers",
+                                                command=self.clear_marker_event)
+        self.button_2.grid(pady=(20, 0), padx=(20, 20), row=1, column=0)
+
+        self.map_label = customtkinter.CTkLabel(self.frame_left, text="Tile Server:", anchor="w")
+        self.map_label.grid(row=3, column=0, padx=(20, 20), pady=(20, 0))
+        self.map_option_menu = customtkinter.CTkOptionMenu(self.frame_left, values=["OpenStreetMap", "Google normal", "Google satellite"],
+                                                                       command=self.change_map)
+        self.map_option_menu.grid(row=4, column=0, padx=(20, 20), pady=(10, 0))
+
+        self.appearance_mode_label = customtkinter.CTkLabel(self.frame_left, text="Appearance Mode:", anchor="w")
+        self.appearance_mode_label.grid(row=5, column=0, padx=(20, 20), pady=(20, 0))
+        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.frame_left, values=["Light", "Dark", "System"],
+                                                                       command=self.change_appearance_mode)
+        self.appearance_mode_optionemenu.grid(row=6, column=0, padx=(20, 20), pady=(10, 20))
+
+        # ============ frame_right ============
+
+        self.frame_right.grid_rowconfigure(1, weight=1)
+        self.frame_right.grid_rowconfigure(0, weight=0)
+        self.frame_right.grid_columnconfigure(0, weight=1)
+        self.frame_right.grid_columnconfigure(1, weight=0)
+        self.frame_right.grid_columnconfigure(2, weight=1)
+
+        self.map_widget = TkinterMapView(self.frame_right, corner_radius=0)
+        self.map_widget.grid(row=1, rowspan=1, column=0, columnspan=3, sticky="nswe", padx=(0, 0), pady=(0, 0))
+
+        self.entry = customtkinter.CTkEntry(master=self.frame_right,
+                                            placeholder_text="type address")
+        self.entry.grid(row=0, column=0, sticky="we", padx=(12, 0), pady=12)
+        self.entry.bind("<Return>", self.search_event)
+
+        self.button_5 = customtkinter.CTkButton(master=self.frame_right,
+                                                text="Search",
+                                                width=90,
+                                                command=self.search_event)
+        self.button_5.grid(row=0, column=1, sticky="w", padx=(12, 0), pady=12)
+
+        self.map_widget.add_left_click_map_command(self.left_click_event)
+
+        # Set default values
+        self.map_widget.set_address("Berlin")
+        self.map_option_menu.set("OpenStreetMap")
+        self.appearance_mode_optionemenu.set("Dark")
+
+    def search_event(self, event=None):
+        self.map_widget.set_address(self.entry.get())
 
     def left_click_event(self,coordinates_tuple):
         print(self.initZoneValue)
         
         if self.initZoneValue:
             print("Left click event with coordinates:", coordinates_tuple)
-            self.map_view.set_marker(coordinates_tuple[0], coordinates_tuple[1])
+            self.map_widget.set_marker(coordinates_tuple[0], coordinates_tuple[1])
             self.listeGpsPoints.append(coordinates_tuple)
             print(self.listeGpsPoints)
-    
 
-    
-
-
-    
     def initZone(self, event=None):
         self.initZoneValue = True
+        
 
-    def zoom(self, event=None):
-        pass
+    def clear_marker_event(self):
+        for marker in self.marker_list:
+            marker.delete()
+
+    def change_appearance_mode(self, new_appearance_mode: str):
+        customtkinter.set_appearance_mode(new_appearance_mode)
+
+    def change_map(self, new_map: str):
+        if new_map == "OpenStreetMap":
+            self.map_widget.set_tile_server("https://a.tile.openstreetmap.org/{z}/{x}/{y}.png")
+        elif new_map == "Google normal":
+            self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
+        elif new_map == "Google satellite":
+            self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
 
     def on_closing(self, event=0):
         self.destroy()
-        exit()
 
     def start(self):
         self.mainloop()
 
+
 if __name__ == "__main__":
     app = App()
-    app.start()        
+    app.start()
