@@ -41,20 +41,20 @@ class App(customtkinter.CTk):
 
         # ============ frame_left ============
 
-        self.frame_left.grid_rowconfigure(2, weight=1)
+        self.frame_left.grid_rowconfigure(3, weight=1)
 
         self.button_1 = customtkinter.CTkButton(master=self.frame_left,text="Zone Nav", command=self.initZone)
         self.button_1.grid(pady=(20, 0), padx=(20, 20), row=0, column=0)
 
-        self.button_2 = customtkinter.CTkButton(master=self.frame_left,
-                                                text="Clear Markers",
-                                                command=self.clear_marker_event)
+        self.button_2 = customtkinter.CTkButton(master=self.frame_left,text="Clear Markers",command=self.clear_marker_event)
         self.button_2.grid(pady=(20, 0), padx=(20, 20), row=1, column=0)
+
+        self.button_MajBalise = customtkinter.CTkButton(master=self.frame_left,text="Balise")
+        self.button_MajBalise.grid(pady=(20, 0), padx=(20, 20), row=2, column=0)
 
         self.map_label = customtkinter.CTkLabel(self.frame_left, text="Tile Server:", anchor="w")
         self.map_label.grid(row=3, column=0, padx=(20, 20), pady=(20, 0))
-        self.map_option_menu = customtkinter.CTkOptionMenu(self.frame_left, values=["OpenStreetMap", "Google normal", "Google satellite"],
-                                                                       command=self.change_map)
+        self.map_option_menu = customtkinter.CTkOptionMenu(self.frame_left, values=["OpenStreetMap", "Google normal", "Google satellite"], command=self.change_map)
         self.map_option_menu.grid(row=4, column=0, padx=(20, 20), pady=(10, 0))
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.frame_left, text="Appearance Mode:", anchor="w")
