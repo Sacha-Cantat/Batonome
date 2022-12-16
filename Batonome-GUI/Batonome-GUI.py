@@ -69,7 +69,7 @@ class App(customtkinter.CTk):
         self.frameBaliseGPS.grid_rowconfigure(2, weight=1)
         
         #Bouton pour mettre à jour la balise
-        self.button_MajBalise = customtkinter.CTkButton(master=self.frameBaliseGPS,text="Balise",command = self.baliseGPS)
+        self.button_MajBalise = customtkinter.CTkButton(master=self.frameBaliseGPS,text="Balise",image = self.imageUnLock,command = self.baliseGPS)
         self.button_MajBalise.grid(pady=(30, 0), padx=(20, 20), row=0, column=0)
 
         #Zone de texte popur stocker les coordonnées GPS de la balise
@@ -130,10 +130,14 @@ class App(customtkinter.CTk):
             self.baliseState = True
             self.textBaliseLat.configure(state="disabled")
             self.textBaliseLon.configure(state="disabled")
+            #Maj cadenas
+            self.button_MajBalise.configure(image = self.imageLock)
         else:
             self.baliseState = False
             self.textBaliseLat.configure(state="normal")
             self.textBaliseLon.configure(state="normal")
+            #Maj Cadena
+            self.button_MajBalise.configure(image = self.imageUnLock)
 
     def left_click_event(self,coordinates_tuple):
         print(self.initZoneValue)
