@@ -29,6 +29,7 @@ class App(customtkinter.CTk):
         self.initZoneValue = False
         self.listeGpsPoints = []
         self.baliseState = False
+        self.baliseGPSCordinate = (0,0)
 
         # ============ create two CTkFrames ============
 
@@ -130,14 +131,21 @@ class App(customtkinter.CTk):
             self.baliseState = True
             self.textBaliseLat.configure(state="disabled")
             self.textBaliseLon.configure(state="disabled")
+            #Recupere les coordonnées GPS de la balise
+            self.baliseGPSCordinate = (float(self.textBaliseLat.get("0.0", "end")) , float(self.textBaliseLon.get("0.0", "end")))
+            #Positionne une balise bleue
+            #self.markerBaliseGPS = self.map_widget.set_marker(self.baliseGPSCordinate[0], self.baliseGPSCordinate[1])
             #Maj cadenas
             self.button_MajBalise.configure(image = self.imageLock)
+
         else:
             self.baliseState = False
             self.textBaliseLat.configure(state="normal")
             self.textBaliseLon.configure(state="normal")
             #Maj Cadena
             self.button_MajBalise.configure(image = self.imageUnLock)
+            #Suprime la balise bleue
+            #self.markerBaliseGPS.delete()
 
     def left_click_event(self,coordinates_tuple):
         print(self.initZoneValue)
