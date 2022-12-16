@@ -1,5 +1,7 @@
 import customtkinter
+import PIL
 from tkintermapview import TkinterMapView
+from PIL import Image,ImageTk
 
 customtkinter.set_default_color_theme("blue")
 
@@ -43,9 +45,20 @@ class App(customtkinter.CTk):
         # ============ frame_left ============
 
         self.frame_left.grid_rowconfigure(3, weight=1)
+         #Ajouter une image dans le bouton
 
-        self.button_1 = customtkinter.CTkButton(master=self.frame_left,text="Zone Nav", command=self.initZone)
+        
+        self.imageLock = customtkinter.CTkImage(light_image=Image.open("C://Users//scant//Dev//Batonome//Batonome-GUI//media//lock.png"),
+                                  dark_image=Image.open("C://Users//scant//Dev//Batonome//Batonome-GUI//media//lock.png"),
+                                  size=(20, 20))
+
+        self.imageUnLock = customtkinter.CTkImage(light_image=Image.open("C://Users//scant//Dev//Batonome//Batonome-GUI//media//unlock.png"),
+                                  dark_image=Image.open("C://Users//scant//Dev//Batonome//Batonome-GUI//media//unlock.png"),
+                                  size=(20, 20))
+
+        self.button_1 = customtkinter.CTkButton(master=self.frame_left,text="Zone Nav",image=self.imageUnLock, command=self.initZone)
         self.button_1.grid(pady=(20, 0), padx=(20, 20), row=0, column=0)
+       
 
         self.button_2 = customtkinter.CTkButton(master=self.frame_left,text="Clear Markers",command=self.clear_marker_event)
         self.button_2.grid(pady=(20, 0), padx=(20, 20), row=1, column=0)
@@ -125,19 +138,25 @@ class App(customtkinter.CTk):
     def left_click_event(self,coordinates_tuple):
         print(self.initZoneValue)
         print(self.baliseState)
-        if self.initZoneValue:
+        if (self.initZoneValue==False):
             print("Left click event with coordinates:", coordinates_tuple)
-            self.map_widget.set_marker(coordinates_tuple[0], coordinates_tuple[1])
+            self.marker_list.append(self.map_widget.set_marker(coordinates_tuple[0], coordinates_tuple[1]))
             self.listeGpsPoints.append(coordinates_tuple)
             print(self.listeGpsPoints)
+
 
     def initZone(self, event=None):
         if(self.initZoneValue == False):
             self.initZoneValue = True
-            self.button_1.configure(text="Valider",command=self.initZone, fg_color="red")
+            self.polygon_1 = self.map_widget.set_polygon(self.listeGpsPoints, fill_color=None,  outline_color="red",  border_width=12, name="Zone de navigation")
+            self.button_1.configure(image=self.imageLock)
         else:
             self.initZoneValue = False
-            self.button_1.configure(text="Zone Nav",command=self.initZone, fg_color="blue")
+            self.polygon_1.delete()
+            self.listeGpsPoints.clear()
+            self.button_1.configure(image=self.imageUnLock)
+            self.clear_marker_event()
+
         
 
     def clear_marker_event(self):
