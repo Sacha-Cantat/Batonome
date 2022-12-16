@@ -59,15 +59,11 @@ class App(customtkinter.CTk):
 
         self.button_1 = customtkinter.CTkButton(master=self.frame_left,text="Zone Nav",image=self.imageUnLock, command=self.initZone)
         self.button_1.grid(pady=(20, 0), padx=(20, 20), row=0, column=0)
-       
-
-        self.button_2 = customtkinter.CTkButton(master=self.frame_left,text="Clear Markers",command=self.clear_marker_event)
-        self.button_2.grid(pady=(20, 0), padx=(20, 20), row=1, column=0)
 
 
         self.frameBaliseGPS = customtkinter.CTkFrame(master=self.frame_left, width=150, corner_radius=0, fg_color=None)
-        self.frameBaliseGPS.grid(row=2, column=0, padx=0, pady=0, sticky="nsew")
-        self.frameBaliseGPS.grid_rowconfigure(2, weight=1)
+        self.frameBaliseGPS.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
+        self.frameBaliseGPS.grid_rowconfigure(1, weight=1)
         
         #Bouton pour mettre à jour la balise
         self.button_MajBalise = customtkinter.CTkButton(master=self.frameBaliseGPS,text="Balise",image = self.imageUnLock,command = self.baliseGPS)
@@ -84,15 +80,15 @@ class App(customtkinter.CTk):
 
 
         self.map_label = customtkinter.CTkLabel(self.frame_left, text="Tile Server:", anchor="w")
-        self.map_label.grid(row=4, column=0, padx=(20, 20), pady=(20, 0))
+        self.map_label.grid(row=5, column=0, padx=(20, 20), pady=(20, 0))
         self.map_option_menu = customtkinter.CTkOptionMenu(self.frame_left, values=["OpenStreetMap", "Google normal", "Google satellite"], command=self.change_map)
-        self.map_option_menu.grid(row=5, column=0, padx=(20, 20), pady=(10, 0))
+        self.map_option_menu.grid(row=6, column=0, padx=(20, 20), pady=(10, 0))
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.frame_left, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=6, column=0, padx=(20, 20), pady=(20, 0))
+        self.appearance_mode_label.grid(row=7, column=0, padx=(20, 20), pady=(20, 0))
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.frame_left, values=["Light", "Dark", "System"],
                                                                        command=self.change_appearance_mode)
-        self.appearance_mode_optionemenu.grid(row=7, column=0, padx=(20, 20), pady=(10, 20))
+        self.appearance_mode_optionemenu.grid(row=8, column=0, padx=(20, 20), pady=(10, 20))
 
         # ============ frame_right ============
 
@@ -132,7 +128,7 @@ class App(customtkinter.CTk):
             self.textBaliseLat.configure(state="disabled")
             self.textBaliseLon.configure(state="disabled")
             #Recupere les coordonnées GPS de la balise
-            self.baliseGPSCordinate = (float(self.textBaliseLat.get("0.0", "end")) , float(self.textBaliseLon.get("0.0", "end")))
+            #self.baliseGPSCordinate = (float(self.textBaliseLat.get("0.0", "end")) , float(self.textBaliseLon.get("0.0", "end")))
             #Positionne une balise bleue
             #self.markerBaliseGPS = self.map_widget.set_marker(self.baliseGPSCordinate[0], self.baliseGPSCordinate[1])
             #Maj cadenas
@@ -145,7 +141,8 @@ class App(customtkinter.CTk):
             #Maj Cadena
             self.button_MajBalise.configure(image = self.imageUnLock)
             #Suprime la balise bleue
-            #self.markerBaliseGPS.delete()
+            self.markerBaliseGPS.delete()
+
 
     def left_click_event(self,coordinates_tuple):
         print(self.initZoneValue)
@@ -155,6 +152,18 @@ class App(customtkinter.CTk):
             self.marker_list.append(self.map_widget.set_marker(coordinates_tuple[0], coordinates_tuple[1]))
             self.listeGpsPoints.append(coordinates_tuple)
             print(self.listeGpsPoints)
+        else:
+            if (self.baliseState==False):
+                #self.baliseGPS()
+                self.markerBaliseGPS = self.map_widget.set_marker(coordinates_tuple[0], coordinates_tuple[1])
+                self.baliseGPSCordinate = (float(coordinates_tuple[0]) , float(coordinates_tuple[0]))
+                #Positionne les info GPS dans les textboxes
+                self.textBaliseLat.delete("0.0", "end")
+                self.textBaliseLon.delete("0.0", "end")
+                self.textBaliseLat.insert("0.0", self.baliseGPSCordinate[0])
+                self.textBaliseLon.insert("0.0", self.baliseGPSCordinate[1])
+                self.baliseGPS()
+                
 
 
     def initZone(self, event=None):
