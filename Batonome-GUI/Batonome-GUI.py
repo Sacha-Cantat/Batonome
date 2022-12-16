@@ -58,11 +58,11 @@ class App(customtkinter.CTk):
                                   size=(20, 20))
 
         self.button_1 = customtkinter.CTkButton(master=self.frame_left,text="Zone Nav",image=self.imageUnLock, command=self.initZone)
-        self.button_1.grid(pady=(20, 0), padx=(20, 20), row=0, column=0)
+        self.button_1.grid(pady=(60, 0), padx=(20, 20), row=1, column=0)
 
 
         self.frameBaliseGPS = customtkinter.CTkFrame(master=self.frame_left, width=150, corner_radius=0, fg_color=None)
-        self.frameBaliseGPS.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
+        self.frameBaliseGPS.grid(row=2, column=0, padx=0, pady=0, sticky="nsew")
         self.frameBaliseGPS.grid_rowconfigure(1, weight=1)
         
         #Bouton pour mettre à jour la balise
