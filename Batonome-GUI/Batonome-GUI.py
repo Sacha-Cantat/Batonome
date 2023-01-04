@@ -2,6 +2,7 @@ import customtkinter
 import PIL
 from tkintermapview import TkinterMapView
 from PIL import Image,ImageTk
+import os
 
 customtkinter.set_default_color_theme("blue")
 
@@ -11,6 +12,8 @@ class App(customtkinter.CTk):
     APP_NAME = "Batonome GUI"
     WIDTH = 800
     HEIGHT = 500
+
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,6 +26,11 @@ class App(customtkinter.CTk):
         self.bind("<Command-q>", self.on_closing)
         self.bind("<Command-w>", self.on_closing)
         self.createcommand('tk::mac::Quit', self.on_closing)
+        image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets/Icons")
+        self.gps_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "GPS.png")),
+                                                 dark_image=Image.open(os.path.join(image_path, "GPS.png")), size=(20, 20))
+        self.navigation_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "navigation.png")),
+                                                    dark_image=Image.open(os.path.join(image_path, "navigation.png")), size=(20, 20))
 
         self.marker_list = []
         #InitZone
@@ -33,15 +41,94 @@ class App(customtkinter.CTk):
 
         # ============ create two CTkFrames ============
 
-        self.grid_columnconfigure(0, weight=0)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        # self.grid_columnconfigure(0, weight=0)
+        # self.grid_columnconfigure(1, weight=0)
+        # self.grid_columnconfigure(2, weight=0)
+        # self.grid_rowconfigure(2, weight=1)
 
-        self.frame_left = customtkinter.CTkFrame(master=self, width=150, corner_radius=0, fg_color=None)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=0)
+        self.grid_rowconfigure(2, weight=1)
+
+
+
+        #Create the header frame
+        self.frame_header = customtkinter.CTkFrame(master=self, height=50, corner_radius=0, fg_color=None)
+        self.frame_header.grid(row=0, column=0,columnspan=2, padx=0, pady=0, sticky="nsew")
+
+       
+        
+
+        #Create the log frame
+        self.frame_log = customtkinter.CTkFrame(master=self, height=50, corner_radius=0, fg_color=None)
+        self.frame_log.grid(row=1, column=0, columnspan=2, padx=0, pady=0, sticky="nsew")
+        self.frame_log.grid_columnconfigure(0, weight=1)
+       # self.frame_log.rowconfigure(0, weight=1)
+
+
+        # Create the App frame
+        self.frame_app = customtkinter.CTkFrame(master=self,  corner_radius=0,fg_color=None)
+        self.frame_app.grid(row=2, column=0, padx=0, pady=0,sticky="nsew")
+        self.frame_app.grid_columnconfigure(0, weight=0)
+        self.frame_app.grid_columnconfigure(1, weight=1)
+        self.frame_app.grid_rowconfigure(0, weight=1)
+
+
+        #Create the nav_frame
+        self.frame_nav = customtkinter.CTkFrame(master=self.frame_app, width=100, corner_radius=0, fg_color=None)
+        self.frame_nav.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+        
+
+        #Create the seting_frame
+        self.frame_setting = customtkinter.CTkFrame(master=self.frame_app, width = App.WIDTH, corner_radius=0)
+        self.frame_setting.grid_columnconfigure(0, weight=0)
+        self.frame_setting.grid_columnconfigure(1, weight=1)
+        self.frame_setting.grid_rowconfigure(0, weight=1)
+
+        self.frame_setting.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
+
+        # #create the navigation frame
+        self.frame_navigation = customtkinter.CTkFrame(master=self.frame_app, corner_radius=0,fg_color = "#585858")
+        self.frame_navigation.grid_columnconfigure(1, weight=1)
+        self.frame_navigation.grid_rowconfigure(0, weight=1)
+
+        
+        #Create the left frame settings
+        self.frame_left = customtkinter.CTkFrame(master=self.frame_setting, width=100, corner_radius=0,fg_color = "#585858")
         self.frame_left.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
 
-        self.frame_right = customtkinter.CTkFrame(master=self, corner_radius=0)
+        #create the right frame settings
+        self.frame_right = customtkinter.CTkFrame(master=self.frame_setting, width=1200, corner_radius=0,fg_color = "#585858")
         self.frame_right.grid(row=0, column=1, rowspan=1, pady=0, padx=0, sticky="nsew")
+
+        # ============ header ============
+
+        # ============ log ============
+        self.LogTextbox = customtkinter.CTkTextbox(master=self.frame_log, height=50,corner_radius=0,text_color="white", fg_color="black" ,state = "normal")
+        self.LogTextbox.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+
+        self.LogTextbox.insert("0.0", "Log...")  # insert at line 0 character 0
+        self.LogTextbox = self.LogTextbox.get("0.0", "end")  # get text from line 0 character 0 till the end
+
+        # ============ frame_app ============
+
+        # ============ frame_nav ============
+
+        #Add Button settings
+        self.button_settings = customtkinter.CTkButton(self.frame_nav, corner_radius=0, height=40, border_spacing=10, text="Settings",image = self.gps_image,
+                                                    fg_color="transparent",text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                                                   anchor="w", command=self.settings_button_event)
+        self.button_settings.grid(row=0, column=0, padx=0, pady=0, sticky="ew")
+
+        #Add Button Navigation
+        self.button_navigation = customtkinter.CTkButton(self.frame_nav, corner_radius=0, height=40, border_spacing=10, text="Navigation", image = self.navigation_image,
+                                                   fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                                                   anchor="w", command=self.navigation_button_event)
+        self.button_navigation.grid(row=1, column=0, padx=0, pady=0, sticky="ew")
+
+       
+        
 
         # ============ frame_left ============
 
@@ -61,7 +148,7 @@ class App(customtkinter.CTk):
         self.button_1.grid(pady=(60, 0), padx=(20, 20), row=1, column=0)
 
 
-        self.frameBaliseGPS = customtkinter.CTkFrame(master=self.frame_left, width=150, corner_radius=0, fg_color=None)
+        self.frameBaliseGPS = customtkinter.CTkFrame(master=self.frame_left, fg_color="transparent",width=150, corner_radius=0)
         self.frameBaliseGPS.grid(row=2, column=0, padx=0, pady=0, sticky="nsew")
         self.frameBaliseGPS.grid_rowconfigure(1, weight=1)
         
@@ -118,6 +205,27 @@ class App(customtkinter.CTk):
         self.map_widget.set_address("Berlin")
         self.map_option_menu.set("OpenStreetMap")
         self.appearance_mode_optionemenu.set("Dark")
+    
+    def settings_button_event(self):
+        self.select_frame_by_name("settings")
+
+    def navigation_button_event(self):
+        self.select_frame_by_name("navigation")
+    
+    def select_frame_by_name(self, name):
+        # set button color for selected button
+        self.button_settings.configure(fg_color=("gray75", "gray25") if name == "settings" else "transparent")
+        self.button_navigation.configure(fg_color=("gray75", "gray25") if name == "navigation" else "transparent")
+
+        # show selected frame
+        if name == "settings":
+            self.frame_setting.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
+        else:
+            self.frame_setting.grid_forget()
+        if name == "navigation":
+            self.frame_navigation.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
+        else:
+            self.frame_navigation.grid_forget()
 
     def search_event(self, event=None):
         self.map_widget.set_address(self.entry.get())
@@ -194,6 +302,8 @@ class App(customtkinter.CTk):
             self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
         elif new_map == "Google satellite":
             self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
+    
+    
 
     def on_closing(self, event=0):
         self.destroy()
