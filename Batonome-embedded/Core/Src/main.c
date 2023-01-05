@@ -371,7 +371,9 @@ void StartBlink01(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    osDelay(1000);
+    HAL_UART_Transmit(&huart1, "Test", strlen("Test"), HAL_MAX_DELAY);
+    printf("Send Message");
   }
   /* USER CODE END 5 */
 }
