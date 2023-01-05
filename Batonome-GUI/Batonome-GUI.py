@@ -1,8 +1,14 @@
+from tkinter import Canvas
+
+
 import customtkinter
 import PIL
 from tkintermapview import TkinterMapView
 from PIL import Image,ImageTk
 import os
+from serial.tools import list_ports
+
+
 
 customtkinter.set_default_color_theme("blue")
 
@@ -26,11 +32,22 @@ class App(customtkinter.CTk):
         self.bind("<Command-q>", self.on_closing)
         self.bind("<Command-w>", self.on_closing)
         self.createcommand('tk::mac::Quit', self.on_closing)
+
+        #Liste les ports COm disponible :
+        self.port_tuple = ()
+        self.listPortName = []
+        self.listPortInit()
+        self.com = "COM?"
+            
+        
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets/Icons")
         self.gps_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "GPS.png")),
                                                  dark_image=Image.open(os.path.join(image_path, "GPS.png")), size=(20, 20))
         self.navigation_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "navigation.png")),
                                                     dark_image=Image.open(os.path.join(image_path, "navigation.png")), size=(20, 20))
+
+        self.disconnected_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "disconnected.png"))
+                                                        , dark_image=Image.open(os.path.join(image_path, "disconnected.png")), size=(30, 30))
 
         self.marker_list = []
         #InitZone
@@ -54,7 +71,7 @@ class App(customtkinter.CTk):
 
 
         #Create the header frame
-        self.frame_header = customtkinter.CTkFrame(master=self, height=50, corner_radius=0, fg_color=None)
+        self.frame_header = customtkinter.CTkFrame(master=self, height=50, corner_radius=0,fg_color="#2b2b2b")
         self.frame_header.grid(row=0, column=0,columnspan=2, padx=0, pady=0, sticky="nsew")
 
        
@@ -104,6 +121,26 @@ class App(customtkinter.CTk):
 
         # ============ header ============
 
+        self.frame_header.grid_columnconfigure(1, weight=1)
+        self.frame_header.grid_columnconfigure(0, weight=1)
+        self.frame_header.grid_rowconfigure(0, weight=1)
+
+        self.frame_header_left= customtkinter.CTkFrame(master=self.frame_header, corner_radius=0,height = 50 ,width = 400, fg_color=None)
+        self.frame_header_left.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+        
+        self.frame_header_right= customtkinter.CTkFrame(master=self.frame_header,  corner_radius=0,height = 50, fg_color=None)
+        self.frame_header_right.grid(row=0, column=1, padx=0, pady=0, sticky="nse")
+
+        
+
+        # #Ajout du bouton connect
+        self.button_connect = customtkinter.CTkButton(self.frame_header_right, image=self.disconnected_image,text=None,width=60, height=30 ,fg_color="red", hover_color = "#ff2700",command = self.connect)
+        self.button_connect =  self.button_connect.grid(row=0, column=1, padx=(20, 20), pady=(10, 0),sticky="nse")
+        #reduire la taille du bouton
+        
+
+        self.button_COM = customtkinter.CTkOptionMenu(self.frame_header_right, values=self.listPortName,width=90, height=30, command=self.majPortCom)
+        self.button_COM.grid(row=0, column=0, padx=(20, 20), pady=(10, 0),sticky="nse")
         # ============ log ============
         self.LogTextbox = customtkinter.CTkTextbox(master=self.frame_log, height=50,corner_radius=0,text_color="white", fg_color="black" ,state = "normal")
         self.LogTextbox.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
@@ -162,21 +199,18 @@ class App(customtkinter.CTk):
 
         #Zone de texte popur stocker les coordonnées GPS de la balise
         self.textBaliseLat = customtkinter.CTkTextbox(master=self.frameBaliseGPS, width=130, height=1)
-        self.textBaliseLat.grid(pady=(5, 20), padx=(20, 20), row=2, column=0)
+        self.textBaliseLat.grid(row=3, column=0, padx=(20, 20), pady=(10, 0))
 
 
 
         self.map_label = customtkinter.CTkLabel(self.frame_left, text="Tile Server:", anchor="w")
-        self.map_label.grid(row=5, column=0, padx=(20, 20), pady=(20, 0))
+        self.map_label.grid(pady=(5, 20), padx=(20, 20), row=3, column=0)
         self.map_option_menu = customtkinter.CTkOptionMenu(self.frame_left, values=["OpenStreetMap", "Google normal", "Google satellite"], command=self.change_map)
-        self.map_option_menu.grid(row=6, column=0, padx=(20, 20), pady=(10, 0))
+        self.map_option_menu.grid(row=4, column=0, padx=(20, 20), pady=(10, 0))
 
-        self.appearance_mode_label = customtkinter.CTkLabel(self.frame_left, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=7, column=0, padx=(20, 20), pady=(20, 0))
-        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.frame_left, values=["Light", "Dark", "System"],
-                                                                       command=self.change_appearance_mode)
-        self.appearance_mode_optionemenu.grid(row=8, column=0, padx=(20, 20), pady=(10, 20))
-
+       # Bouton pour envoyer les infos au bateau
+        self.button_SendBoat = customtkinter.CTkButton(master=self.frameBaliseGPS,text="Syncronisation")
+        self.button_SendBoat.grid(row=5, column=0, padx=(20, 20), pady=(10, 0))
         # ============ frame_right ============
 
         self.frame_right.grid_rowconfigure(1, weight=1)
@@ -204,7 +238,8 @@ class App(customtkinter.CTk):
         # Set default values
         self.map_widget.set_address("Berlin")
         self.map_option_menu.set("OpenStreetMap")
-        self.appearance_mode_optionemenu.set("Dark")
+        self.button_COM.set("COM?")
+        
     
     def settings_button_event(self):
         self.select_frame_by_name("settings")
@@ -291,6 +326,46 @@ class App(customtkinter.CTk):
     def clear_marker_event(self):
         for marker in self.marker_list:
             marker.delete()
+
+    def listPortInit(self):
+        #Erase the tuple
+        self.listPortName.clear()
+        self.listPort = list_ports.comports()
+        self.listPortName = []
+        for port in self.listPort:
+            self.listPortName.append(port.device)
+    
+    def addLog(self, text):
+        self.countLine = 1
+        #self.LogTextbox.insert("0.0", text)  # insert at line 0 character 0
+        self.countLine = self.countLine + 1
+
+    def connect(self):
+        if(self.com == "COM?"):
+            print("Veuillez selectionner un port COM valide")
+            self.addLog("Veuillez selectionner un port COM valide")
+        else:
+            print("Connexion au port COM : " + self.com)
+
+            self.addLog("Connexion au port COM : " + self.com)
+            self.addLog("Veuillez patienter...")
+            self.addLog("")
+
+            #self.device = XBeeDevice(self.com, 9600)
+            self.sendDataToBoat("Batonome Vaincra")
+
+
+    def sendDataToBoat(self, textToSend):
+        print("Envoi de : " + textToSend)
+        # self.device.open()
+        # self.device.send_data_broadcast(textToSend)
+        # self.device.close()
+    
+    def majPortCom(self,new_com: str):
+        self.com = new_com
+        self.addLog("Port COM selectionné : ")
+        print(self.com)
+
 
     def change_appearance_mode(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
