@@ -1,0 +1,2 @@
+../Core/Src/zigbee.c:16:6:StartZigbeeCom	16	static
+../Core/Src/zigbee.c:29:6:zigbee_Init	48	static

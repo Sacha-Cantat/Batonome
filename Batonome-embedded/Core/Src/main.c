@@ -42,10 +42,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
-I2C_HandleTypeDef hi2c3;
 
-UART_HandleTypeDef huart1;
 
 /* Definitions for blink01 */
 osThreadId_t blink01Handle;
@@ -76,10 +73,16 @@ void StartBlink02(void *argument);
 
 /* USER CODE BEGIN PFP */
 
+I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c3;
+
+UART_HandleTypeDef huart1;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 
 /* USER CODE END 0 */
 
@@ -373,9 +376,7 @@ void StartBlink01(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1000);
-    HAL_UART_Transmit(&huart1, "Test", strlen("Test"), HAL_MAX_DELAY);
-    printf("Send Message");
+
   }
   /* USER CODE END 5 */
 }
