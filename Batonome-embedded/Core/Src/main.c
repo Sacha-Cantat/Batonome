@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "Imu.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -59,6 +60,13 @@ const osThreadAttr_t blink02_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal1,
 };
+/* Definitions for Imu */
+osThreadId_t ImuHandle;
+const osThreadAttr_t Imu_attributes = {
+  .name = "Imu",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -71,6 +79,8 @@ static void MX_I2C3_Init(void);
 static void MX_USART1_UART_Init(void);
 void StartBlink01(void *argument);
 void StartBlink02(void *argument);
+void StartImu(void *argument);
+
 
 /* USER CODE BEGIN PFP */
 
@@ -137,10 +147,14 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of blink01 */
-  blink01Handle = osThreadNew(StartBlink01, NULL, &blink01_attributes);
+  //blink01Handle = osThreadNew(StartBlink01, NULL, &blink01_attributes);
 
   /* creation of blink02 */
-  blink02Handle = osThreadNew(StartBlink02, NULL, &blink02_attributes);
+  //blink02Handle = osThreadNew(StartBlink02, NULL, &blink02_attributes);
+
+  /* creation of IMU */
+  ImuHandle = osThreadNew(StartImu, NULL, &Imu_attributes);
+
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -355,7 +369,19 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/**
+  * @brief  Function implementing the Imu management thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+void StartImu(void *argument)
+{
+	for(;;)
+	{
+		osDelay(1);
+		ImuManagement();
+	}
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartBlink01 */
@@ -371,9 +397,7 @@ void StartBlink01(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1000);
-    HAL_UART_Transmit(&huart1, "Test", strlen("Test"), HAL_MAX_DELAY);
-    printf("Send Message");
+    osDelay(1);
   }
   /* USER CODE END 5 */
 }
