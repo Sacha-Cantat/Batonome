@@ -13,15 +13,33 @@
 void StartZigbeeCom(void *argument);
 void zigbee_Init();
 
+void sendData(uint8_t *data, uint16_t size) {
+    HAL_UART_Transmit(&huart1, data, size, 100);
+}
+
+void receiveData(uint8_t *data, uint16_t size) {
+    HAL_UART_Receive(&huart1, data, size, 100);
+}
+
+
 void StartZigbeeCom(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
+	uint8_t received_data[100];
+
   for(;;)
   {
-    osDelay(1000);
-    //HAL_UART_Transmit(&huart1, "Test", strlen("Test"), HAL_MAX_DELAY);
-    //printf("Send Message");
+
+
+	 if(HAL_UART_Receive(&huart1, received_data, 100, 100) == HAL_OK)
+	 {
+		 HAL_UART_Transmit(&huart1, received_data, 100, 100);
+	 }
+	
+	
+
+
   }
   /* USER CODE END 5 */
 }
