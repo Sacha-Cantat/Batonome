@@ -123,6 +123,8 @@ int main(void)
   MX_I2C3_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  zigbee_Init();
+
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
