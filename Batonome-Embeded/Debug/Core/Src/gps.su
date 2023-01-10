@@ -1,0 +1,2 @@
+../Core/Src/gps.c:15:6:gpsTask	4	static
+../Core/Src/gps.c:25:6:gps_Init	48	static
