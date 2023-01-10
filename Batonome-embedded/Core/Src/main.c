@@ -22,6 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "zigbee.h"
+
 
 /* USER CODE END Includes */
 
@@ -76,10 +78,16 @@ void StartBlink02(void *argument);
 
 /* USER CODE BEGIN PFP */
 
+I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c3;
+
+UART_HandleTypeDef huart1;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 
 /* USER CODE END 0 */
 
@@ -308,6 +316,8 @@ static void MX_I2C3_Init(void)
 
 }
 
+
+
 /**
   * @brief USART1 Initialization Function
   * @param None
@@ -409,9 +419,7 @@ void StartBlink01(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1000);
-    HAL_UART_Transmit(&huart1, "Test", strlen("Test"), HAL_MAX_DELAY);
-    printf("Send Message");
+
   }
   /* USER CODE END 5 */
 }

@@ -7,6 +7,7 @@ from tkintermapview import TkinterMapView
 from PIL import Image,ImageTk
 import os
 from serial.tools import list_ports
+import serial
 
 
 
@@ -345,6 +346,7 @@ class App(customtkinter.CTk):
             print("Veuillez selectionner un port COM valide")
             self.addLog("Veuillez selectionner un port COM valide")
         else:
+            self.initCOM()
             print("Connexion au port COM : " + self.com)
 
             self.addLog("Connexion au port COM : " + self.com)
@@ -377,6 +379,10 @@ class App(customtkinter.CTk):
             self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
         elif new_map == "Google satellite":
             self.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
+
+    def initCOM(self):
+        # Ouvre la liaison série sur le port sélectionné à une vitesse de 9600 bauds
+        xbee = serial.Serial(self.com, 9600)
     
     
 
