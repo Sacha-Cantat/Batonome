@@ -51,6 +51,7 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 /* USER CODE END 0 */
 
@@ -189,5 +190,13 @@ void TIM6_DAC_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART1) {  // Vérifiez si l'interruption est pour UART2
+        // traitement des données reçues
+        // ...
+        HAL_UART_Receive_IT(&huart1, received_data, sizeof(received_data)); // redemande la réception pour continuer avec la suite des données
+    }
+}
 
 /* USER CODE END 1 */

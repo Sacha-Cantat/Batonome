@@ -38,6 +38,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+uint8_t received_data[100];
 
 /* USER CODE END PM */
 
@@ -123,9 +124,9 @@ int main(void)
   MX_I2C3_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-  zigbee_Init();
 
   /* USER CODE BEGIN 2 */
+  zigbee_Init();
 
   /* USER CODE END 2 */
 
@@ -350,6 +351,7 @@ static void MX_USART1_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
+  HAL_UART_Receive_IT(&huart1, received_data, sizeof(received_data));  // activer les interruptions de réception pour huart1
 
   /* USER CODE END USART1_Init 2 */
 
