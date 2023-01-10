@@ -1,9 +1,14 @@
-from digi.xbee.devices import XBeeDevice
-device = XBeeDevice("COM4", 9600)
+import serial
 
-# 
+ser = serial.Serial("COM4", baudrate=9600, timeout=1)
 
-device.open()
+while True:
+    # data = "Hi"
+    # ser.write(data.encode())
 
-device.send_data_broadcast("Hello XBee!")
-device.close()
+    received_data = ser.readline().decode()
+    if received_data:
+        print("Received data: ", received_data)
+        
+
+ser.close()

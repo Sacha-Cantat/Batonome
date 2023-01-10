@@ -27,15 +27,16 @@ void StartZigbeeCom(void *argument)
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
 	uint8_t received_data[100];
+	received_data[0] = 0x02;
 
   for(;;)
   {
 
-
-	 if(HAL_UART_Receive(&huart1, received_data, 100, 100) == HAL_OK)
-	 {
-		 HAL_UART_Transmit(&huart1, received_data, 100, 100);
-	 }
+	  HAL_UART_Transmit(&huart1, received_data, 1, 100);
+//	 if(HAL_UART_Receive(&huart1, received_data, 100, 100) == HAL_OK)
+//	 {
+//		 HAL_UART_Transmit(&huart1, received_data, 100, 100);
+//	 }
 	
 	
 
