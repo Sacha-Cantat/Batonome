@@ -19,11 +19,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "Imu.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "Imu.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,6 +32,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -45,6 +46,7 @@ I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c3;
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 
 /* Definitions for blink01 */
 osThreadId_t blink01Handle;
@@ -60,6 +62,7 @@ const osThreadAttr_t blink02_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityBelowNormal1,
 };
+/* USER CODE BEGIN PV */
 /* Definitions for Imu */
 osThreadId_t ImuHandle;
 const osThreadAttr_t Imu_attributes = {
@@ -67,8 +70,6 @@ const osThreadAttr_t Imu_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -77,18 +78,26 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_USART2_UART_Init(void);
 void StartBlink01(void *argument);
 void StartBlink02(void *argument);
-void StartImu(void *argument);
-
-
 /* USER CODE BEGIN PFP */
-
+void StartImu(void *argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif
 
+PUTCHAR_PROTOTYPE
+{
+  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  return ch;
+}
 /* USER CODE END 0 */
 
 /**
@@ -98,7 +107,6 @@ void StartImu(void *argument);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -107,7 +115,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -122,8 +129,9 @@ int main(void)
   MX_I2C1_Init();
   MX_I2C3_Init();
   MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  printf("Welcome Batonome v1.0.0\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -147,17 +155,14 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of blink01 */
-  //blink01Handle = osThreadNew(StartBlink01, NULL, &blink01_attributes);
+  blink01Handle = osThreadNew(StartBlink01, NULL, &blink01_attributes);
 
   /* creation of blink02 */
-  //blink02Handle = osThreadNew(StartBlink02, NULL, &blink02_attributes);
-
-  /* creation of IMU */
-  ImuHandle = osThreadNew(StartImu, NULL, &Imu_attributes);
-
+  blink02Handle = osThreadNew(StartBlink02, NULL, &blink02_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+  /* add thread IMU */
+  ImuHandle = osThreadNew(StartImu, NULL, &Imu_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -351,6 +356,41 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
 
 }
 

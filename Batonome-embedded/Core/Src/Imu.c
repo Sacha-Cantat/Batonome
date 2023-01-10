@@ -2,15 +2,14 @@
  * Imu.c
  *
  *  Created on: 5 janv. 2023
- *      Author: aubin
+ *      Author: Aubin
  */
+
+#include "Imu.h"
 
 void ImuManagement()
 {
-
-	printf("Nous voila ici");
-
-
+	printf("IMU management task is launched\n");
 }
 
 
