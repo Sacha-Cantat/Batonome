@@ -22,9 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "Imu.h"
 #include "zigbee.h"
-
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,6 +33,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -64,7 +65,13 @@ const osThreadAttr_t blink02_attributes = {
   .priority = (osPriority_t) osPriorityBelowNormal1,
 };
 /* USER CODE BEGIN PV */
-
+/* Definitions for Imu */
+osThreadId_t ImuHandle;
+const osThreadAttr_t Imu_attributes = {
+  .name = "Imu",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,8 +83,8 @@ static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 void StartBlink01(void *argument);
 void StartBlink02(void *argument);
-
 /* USER CODE BEGIN PFP */
+void StartImu(void *argument);
 
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c3;
@@ -88,8 +95,17 @@ UART_HandleTypeDef huart1;
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif
 
-
+PUTCHAR_PROTOTYPE
+{
+  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  return ch;
+}
 /* USER CODE END 0 */
 
 /**
@@ -99,7 +115,6 @@ UART_HandleTypeDef huart1;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -108,7 +123,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -123,11 +137,9 @@ int main(void)
   MX_I2C1_Init();
   MX_I2C3_Init();
   MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
-
   /* USER CODE BEGIN 2 */
+  printf("Welcome Batonome v1.0.0\n");
   zigbee_Init();
-
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -157,7 +169,8 @@ int main(void)
   blink02Handle = osThreadNew(StartBlink02, NULL, &blink02_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+  /* add thread IMU */
+  ImuHandle = osThreadNew(StartImu, NULL, &Imu_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -407,7 +420,19 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/**
+  * @brief  Function implementing the Imu management thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+void StartImu(void *argument)
+{
+	for(;;)
+	{
+		osDelay(1);
+		ImuManagement();
+	}
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartBlink01 */
@@ -423,7 +448,7 @@ void StartBlink01(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
+    osDelay(1);
   }
   /* USER CODE END 5 */
 }
