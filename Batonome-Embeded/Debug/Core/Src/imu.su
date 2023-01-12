@@ -1,2 +1,0 @@
-../Core/Src/imu.c:15:6:ImuManagementTask	8	static
-../Core/Src/imu.c:29:6:imu_Init	48	static

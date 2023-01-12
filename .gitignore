@@ -1,5 +1,1 @@
-# ignore tous les fichiers et dossiers
-
-
-# sauf ceux qui se trouvent dans Batonome-Embeded/Debug/Core
-#!Batonome-Embeded/Debug/Core/*
+Batonome-Embeded/Debug
