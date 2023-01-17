@@ -32,6 +32,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+uint8_t UART1_rxBuffer[12] = {0};
+uint8_t UART1_txBuffer[12] = {0};
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -102,6 +104,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -122,6 +125,8 @@ int main(void)
   gps_Init();
   imu_Init();
   zigbee_Init();
+  HAL_UART_Receive_IT (&huart1, UART1_rxBuffer, 1);
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -326,7 +331,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -395,6 +400,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart->Instance == USART1) {
+			zigbeeTxCpltCallback();
+		}
+}
 
 /* USER CODE END 4 */
 

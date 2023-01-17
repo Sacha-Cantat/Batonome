@@ -43,6 +43,9 @@ extern UART_HandleTypeDef huart2;
 
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c3;
+
+extern uint8_t UART1_rxBuffer[12] ;
+extern uint8_t UART1_txBuffer[12] ;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

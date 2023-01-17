@@ -12,6 +12,9 @@
 
 void zigbee_Init();
 
+void zigbeeTxCpltCallback();
+
+
 
 
 #endif /* ZIGBEE_ZIGBEE_H_ */
