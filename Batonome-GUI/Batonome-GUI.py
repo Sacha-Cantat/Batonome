@@ -1,5 +1,5 @@
 from tkinter import Canvas
-
+import threading
 
 import customtkinter
 import PIL
@@ -39,6 +39,8 @@ class App(customtkinter.CTk):
         self.listPortName = []
         self.listPortInit()
         self.com = "COM?"
+        self.xbee = None
+        self.timer=None
             
         
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets/Icons")
@@ -352,7 +354,10 @@ class App(customtkinter.CTk):
             self.addLog("Connexion au port COM : " + self.com)
             self.addLog("Veuillez patienter...")
             self.addLog("")
-
+            self.timer = threading.Timer(1.0, self.serialEmit)
+            self.timer.start()
+            self.thread = threading.Thread(target=self.serialThread)
+            self.thread.start()
             #self.device = XBeeDevice(self.com, 9600)
             self.sendDataToBoat("Batonome Vaincra")
 
@@ -362,6 +367,21 @@ class App(customtkinter.CTk):
         # self.device.open()
         # self.device.send_data_broadcast(textToSend)
         # self.device.close()
+
+    def serialThread(self):
+        while True:
+            #Si des data sont sur le port serie on affiche
+            if self.xbee.in_waiting > 0:
+                data = self.xbee.readline().decode().rstrip()
+                print(data)
+                self.addLog(data)
+    
+    def serialEmit(self):
+        data = "4"
+        self.xbee.write(data.encode())
+        print("send 4")
+        self.timer = threading.Timer(1.0, self.serialEmit)
+        self.timer.start()
     
     def majPortCom(self,new_com: str):
         self.com = new_com
@@ -382,17 +402,35 @@ class App(customtkinter.CTk):
 
     def initCOM(self):
         # Ouvre la liaison série sur le port sélectionné à une vitesse de 9600 bauds
-        xbee = serial.Serial(self.com, 9600)
+        self.xbee = serial.Serial(self.com, 9600)
     
     
 
     def on_closing(self, event=0):
         self.destroy()
+        self.timer.cancel()
 
     def start(self):
         self.mainloop()
+
+def thread1():
+    t1 = threading.Thread(target=serie)
+    t1.start()
+
+def thread2():
+    t2 = threading.Thread(target=graphic)
+    t2.start()
+
+def serie():
+    print("Thread 1")
+
+def graphic():
+    pass
+    
+
 
 
 if __name__ == "__main__":
     app = App()
     app.start()
+
