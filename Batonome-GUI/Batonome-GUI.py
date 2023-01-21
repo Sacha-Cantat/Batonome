@@ -8,6 +8,8 @@ from PIL import Image,ImageTk
 import os
 from serial.tools import list_ports
 import serial
+import struct
+import time
 
 
 
@@ -41,6 +43,15 @@ class App(customtkinter.CTk):
         self.com = "COM?"
         self.xbee = None
         self.timer=None
+        self.countLine = "1.0"
+        self.latitude = 0
+        self.longitude = 0
+        self.angle = 0
+        self.sizeDataToreceive = 24
+        self.firstDataReceived = False
+        
+        #Tableau de 3 booleen pour savoir si le bateau est connecté
+        self.boatConnected = [False,False,False]
             
         
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets/Icons")
@@ -51,6 +62,9 @@ class App(customtkinter.CTk):
 
         self.disconnected_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "disconnected.png"))
                                                         , dark_image=Image.open(os.path.join(image_path, "disconnected.png")), size=(30, 30))
+
+        self.connected_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "connected.png"))
+                                                        , dark_image=Image.open(os.path.join(image_path, "connected.png")), size=(30, 30))
 
         self.marker_list = []
         #InitZone
@@ -135,11 +149,18 @@ class App(customtkinter.CTk):
         self.frame_header_right.grid(row=0, column=1, padx=0, pady=0, sticky="nse")
 
         
+        self.button_navigation = customtkinter.CTkButton(self.frame_nav, corner_radius=0, height=40, border_spacing=10, text="Navigation", image = self.navigation_image,
+                                                   fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                                                   anchor="w", command=self.navigation_button_event)
+        self.button_navigation.grid(row=1, column=0, padx=0, pady=0, sticky="ew")
+        self.button_navigation.configure()
 
         # #Ajout du bouton connect
-        self.button_connect = customtkinter.CTkButton(self.frame_header_right, image=self.disconnected_image,text=None,width=60, height=30 ,fg_color="red", hover_color = "#ff2700",command = self.connect)
-        self.button_connect =  self.button_connect.grid(row=0, column=1, padx=(20, 20), pady=(10, 0),sticky="nse")
-        #reduire la taille du bouton
+        self.button_connect = customtkinter.CTkButton(self.frame_header_right,  height=30,width=60, text=None, image = self.disconnected_image,
+                                                   fg_color="red", hover_color="#ff2700",
+                                                    command=self.connect)
+        #changer la couleur du bouton
+        self.button_connect.grid(row=0, column=1, padx=(20, 20), pady=(10, 0),sticky="nse")
         
 
         self.button_COM = customtkinter.CTkOptionMenu(self.frame_header_right, values=self.listPortName,width=90, height=30, command=self.majPortCom)
@@ -148,8 +169,12 @@ class App(customtkinter.CTk):
         self.LogTextbox = customtkinter.CTkTextbox(master=self.frame_log, height=50,corner_radius=0,text_color="white", fg_color="black" ,state = "normal")
         self.LogTextbox.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
 
-        self.LogTextbox.insert("0.0", "Log...")  # insert at line 0 character 0
-        self.LogTextbox = self.LogTextbox.get("0.0", "end")  # get text from line 0 character 0 till the end
+        self.LogTextbox.insert("0.0", "Log...\n")  # insert at line 0 character 0
+        self.LogTextbox.insert("2.0", "Lag...\n")  # insert at line 0 character 0
+        self.LogTextbox.insert("3.0", "Lug...\n")  # insert at line 0 character 0
+
+
+        #self.LogTextbox = self.LogTextbox.get("0.0", "end")  # get text from line 0 character 0 till the end
 
         # ============ frame_app ============
 
@@ -157,7 +182,7 @@ class App(customtkinter.CTk):
 
         #Add Button settings
         self.button_settings = customtkinter.CTkButton(self.frame_nav, corner_radius=0, height=40, border_spacing=10, text="Settings",image = self.gps_image,
-                                                    fg_color="transparent",text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                                                    fg_color=("gray75", "gray25"),text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                                    anchor="w", command=self.settings_button_event)
         self.button_settings.grid(row=0, column=0, padx=0, pady=0, sticky="ew")
 
@@ -166,7 +191,7 @@ class App(customtkinter.CTk):
                                                    fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                                    anchor="w", command=self.navigation_button_event)
         self.button_navigation.grid(row=1, column=0, padx=0, pady=0, sticky="ew")
-
+        self.button_navigation.configure()
        
         
 
@@ -242,6 +267,11 @@ class App(customtkinter.CTk):
         self.map_widget.set_address("Berlin")
         self.map_option_menu.set("OpenStreetMap")
         self.button_COM.set("COM?")
+    
+    def addLog(self, text):
+        self.LogTextbox.insert(self.countLine, text+"\n")  # insert at line 0 character 0
+        #self.countLine = self.countLine + 1
+       # print(self.countLine)
         
     
     def settings_button_event(self):
@@ -337,11 +367,7 @@ class App(customtkinter.CTk):
         self.listPortName = []
         for port in self.listPort:
             self.listPortName.append(port.device)
-    
-    def addLog(self, text):
-        self.countLine = 1
-        #self.LogTextbox.insert("0.0", text)  # insert at line 0 character 0
-        self.countLine = self.countLine + 1
+
 
     def connect(self):
         if(self.com == "COM?"):
@@ -354,27 +380,75 @@ class App(customtkinter.CTk):
             self.addLog("Connexion au port COM : " + self.com)
             self.addLog("Veuillez patienter...")
             self.addLog("")
-            self.timer = threading.Timer(1.0, self.serialEmit)
-            self.timer.start()
-            self.thread = threading.Thread(target=self.serialThread)
-            self.thread.start()
-            #self.device = XBeeDevice(self.com, 9600)
-            self.sendDataToBoat("Batonome Vaincra")
+            self.startThreadSerial()
+            
+    def startThreadSerial(self):
+        #On emet toutes les secondes
+        self.timer = threading.Timer(1.0, self.serialEmit)
+        self.timer.start()
+        #On lance le thread de reception
+        self.thread = threading.Thread(target=self.serialThread)
+        self.thread.start()
 
+    def connectionLost(self):
+        #On passe le bouton connect en orange
+        self.button_connect.configure(fg_color="red",image = self.disconnected_image)
+        pass
 
-    def sendDataToBoat(self, textToSend):
-        print("Envoi de : " + textToSend)
-        # self.device.open()
-        # self.device.send_data_broadcast(textToSend)
-        # self.device.close()
+    def connectionEstablished(self):
+        #On passe le bouton connect en bleu
+        self.button_connect.configure(fg_color="#1f6aa5",image = self.connected_image)
+       
+        pass
 
     def serialThread(self):
         while True:
             #Si des data sont sur le port serie on affiche
+            #I receive data from the serial port, data is a structure, i want to decode the data, the structure is composed by double, double, float, int
+            
+            received_data = self.xbee.read(self.sizeDataToreceive)
+            #si on a pas recu de données depuis 5 secondes
+            
+
+            #si on a recu des données
+            if received_data:
+
+                if(self.firstDataReceived == False):
+                    self.connectionEstablished()
+                    self.firstDataReceived = True
+                    self.lastDataReceived = time.time()
+
+                print(received_data)
+                #first 2 bytes are the latitude it's a double
+                latitude = struct.unpack('d', received_data[0:8])[0]
+                #next 2 bytes are the longitude it's a double
+                longitude = struct.unpack('d', received_data[8:16])[0]
+                #next 4 bytes are the angle it's a float
+                angle = struct.unpack('f', received_data[16:20])[0]
+                print (latitude)
+                print (longitude)
+                print (angle)
+                
+                
+
+                
+                
+                self.lastDataReceived = time.time()
+                
+
+            if (time.time() - self.lastDataReceived) > 5:
+                print("Perte de connexion avec le bateau")
+                self.addLog("Perte de connexion avec le bateau")
+                self.connectionLost()
+            
+
+
             if self.xbee.in_waiting > 0:
                 data = self.xbee.readline().decode().rstrip()
                 print(data)
                 self.addLog(data)
+    
+    
     
     def serialEmit(self):
         data = "4"
@@ -408,6 +482,7 @@ class App(customtkinter.CTk):
 
     def on_closing(self, event=0):
         self.destroy()
+        #Bug si on clos le thread timer avant de fermer la fenêtre
         self.timer.cancel()
 
     def start(self):
