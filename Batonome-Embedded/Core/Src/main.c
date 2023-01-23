@@ -28,12 +28,20 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-uint8_t UART1_rxBuffer[12] = {0};
-uint8_t UART1_txBuffer[12] = {0};
+uint8_t UART1_rxBuffer[50] = {0};
+uint8_t UART1_txBuffer[50] = {0};
+
+BatonomeStruct batonomeData;
+
+BatonomeStructConf batonomeConf;
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -125,7 +133,7 @@ int main(void)
   gps_Init();
   imu_Init();
   zigbee_Init();
-  HAL_UART_Receive_IT (&huart1, UART1_rxBuffer, 1);
+  HAL_UART_Receive_IT (&huart1, UART1_rxBuffer, 3);
 
   /* USER CODE END 2 */
 
