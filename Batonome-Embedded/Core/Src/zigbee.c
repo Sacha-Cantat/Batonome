@@ -9,12 +9,16 @@
 
 #include "cmsis_os.h"
 #include "main.h"
+#include "string.h"
 
+#define SIZE_LONG_DOUBLE 8
 
 
 
 void ZigbeeComTask(void *argument);
 void zigbee_Init();
+
+uint8_t rxBuffer[RX_BUFFER_SIZE];
 
 uint8_t received_data[10];
 
@@ -29,23 +33,137 @@ uint8_t data[2000];
 
 
 
+void sendBatonomeData(void) {
+   uint8_t buffer[sizeof(batonomeData)];
+   uint8_t* structPtr = (uint8_t*) &batonomeData;
+   for (int i =0 ; i<sizeof(batonomeData);i++)
+   {
+	  buffer[i]= *structPtr++;
 
+   }
+   HAL_UART_Transmit(&huart1, buffer, sizeof(buffer), HAL_MAX_DELAY);
+}
+
+void receiveConf()
+{
+	//Request for conf
+	if (UART1_rxBuffer[1] == '0')
+	{
+		//Send ACK ready to receive
+		//HAL_UART_Transmit(&huart1, (uint8_t*) 0x41, sizeof(0x41), HAL_MAX_DELAY);
+		//receive balise data
+		memcpy(&batonomeDataConf.balise.latitude,&UART1_rxBuffer[8],SIZE_LONG_DOUBLE);
+		memcpy(&batonomeDataConf.balise.longitude,&UART1_rxBuffer[16],SIZE_LONG_DOUBLE);
+
+		memcpy(&batonomeDataConf.perimetreNav,&UART1_rxBuffer[24],SIZE_LONG_DOUBLE*8);
+
+
+
+		//REceive coordo GPS
+
+
+		//Ready to receive 1 byte +1 byte + 2 byte + 40byte
+	}
+
+	if (UART1_rxBuffer[1] == '1')
+	{
+		//memcpy(&batonomeConf.balise[0],)
+
+		//Send ACK ready to receive
+		//HAL_UART_Transmit(&huart1, 43, sizeof(43), HAL_MAX_DELAY);
+
+		//Ready to receive 1 byte +1 byte + 2 byte + 40byte
+		HAL_UART_Receive_IT(&huart1, UART1_rxBuffer, 3);
+	}
+
+
+
+}
+void processData(int sizeData)
+{
+	if (UART1_rxBuffer[0] == 'A')
+		{
+			//HAL_UART_Transmit(&huart1, UART1_txBuffer, 1, 100);
+			sendBatonomeData();
+
+			//HAL_UART_Receive_IT (&huart1, UART1_rxBuffer, 2);
+		}
+		else if(UART1_rxBuffer[0]== 'B')
+		{
+			receiveConf();
+			//HAL_UART_Receive_IT (&huart1, UART1_rxBuffer, 2);
+		}
+}
 
 
 void zigbeeTxCpltCallback(){
-	if (UART1_rxBuffer[0] == 52)
+	static int indexRxBuffer = 0;
+
+	if (rxData != '\n')
 	{
-		HAL_UART_Transmit(&huart1, UART1_txBuffer, 1, 100);
+		UART1_rxBuffer[indexRxBuffer] = rxData;
+		indexRxBuffer++;
 	}
-	HAL_UART_Receive_IT(&huart1, UART1_rxBuffer, 1);
+	else if (rxData == '\n')
+	{
+		processData(indexRxBuffer);
+		//RAZ Buffer
+		for (int i = 0 ; i<RX_BUFFER_SIZE;i++)
+		{
+			UART1_rxBuffer[i]=0;
+		}
+		indexRxBuffer = 0;
+
+
+	}
+	HAL_UART_Receive_IT (&huart1, &rxData, 1);
+
 }
+
+
+
+//
+//	static uint16_t rxBufferIndex = 0;
+//
+//	if(UART1_rxBuffer[0] == 'C')
+//	{
+//		processData();
+//		rxBufferIndex = 0;
+//		//reset rxBuffer
+//		memset(rxBuffer, 0, RX_BUFFER_SIZE);
+//
+//	}
+//	else
+//	{
+//		rxBuffer[rxBufferIndex]=UART1_rxBuffer[0];
+//		rxBufferIndex++;
+//
+//
+//		if (rxBufferIndex >= RX_BUFFER_SIZE)
+//		{
+//			rxBufferIndex = 0;
+//		}
+//	}
+
+
+//	HAL_UART_Receive_IT(&huart1, UART1_rxBuffer, 3);
+	//else HAL_UART_Receive_IT(&huart1, UART1_rxBuffer, 1);
+
+
+
+
+
+
 
 void ZigbeeComTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
  received_data[0]= 0x05;
-
+ batonomeData.positionGPS.latitude = 52.46184682371661;
+ batonomeData.positionGPS.longitude = 53.46184682371661;
+ batonomeData.angle = 320;
+ batonomeData.autreInformation=3;
   for(;;)
   {
 	  char data[] = "Hello World\r\n";
