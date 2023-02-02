@@ -54,8 +54,11 @@ void receiveConf()
 		//receive balise data
 		memcpy(&batonomeDataConf.balise.latitude,&UART1_rxBuffer[8],SIZE_LONG_DOUBLE);
 		memcpy(&batonomeDataConf.balise.longitude,&UART1_rxBuffer[16],SIZE_LONG_DOUBLE);
+		int i = 0;
 
-		memcpy(&batonomeDataConf.perimetreNav,&UART1_rxBuffer[24],SIZE_LONG_DOUBLE*8);
+		//On va enregristrer 20 coordonés GPS de perimetre de navigation
+		memcpy(&batonomeDataConf.perimetreNav,&UART1_rxBuffer[24],SIZE_LONG_DOUBLE*20);
+
 
 
 

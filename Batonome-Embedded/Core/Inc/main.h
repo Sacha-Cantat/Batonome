@@ -35,7 +35,7 @@ extern "C" {
 #include "gps.h"
 #include "zigbee.h"
 /* USER CODE END Includes */
-#define RX_BUFFER_SIZE 100
+#define RX_BUFFER_SIZE 200
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
