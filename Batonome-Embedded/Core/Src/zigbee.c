@@ -169,6 +169,8 @@ void ZigbeeComTask(void *argument)
  batonomeData.autreInformation=3;
   for(;;)
   {
+
+
 	  char data[] = "Hello World\r\n";
 	 // HAL_UART_Transmit(&huart1, (uint8_t*)data, sizeof(data), HAL_MAX_DELAY);
 	 // HAL_UART_Transmit_IT(&huart2, data, sizeof (data));
@@ -196,6 +198,8 @@ void zigbee_Init()
 	printf("Start task Zigbee \n");
 
 	zigbeeComHandle = osThreadNew(ZigbeeComTask, NULL, &zigbee_com_attributes);
+
+
 }
 
 

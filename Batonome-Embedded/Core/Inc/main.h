@@ -35,10 +35,12 @@ extern "C" {
 #include "gps.h"
 #include "zigbee.h"
 /* USER CODE END Includes */
-#define RX_BUFFER_SIZE 200
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+
+#define RX_BUFFER_SIZE 80
+
 typedef struct CordoGPS {
     long double latitude;
     long double longitude;
@@ -63,6 +65,8 @@ typedef struct BatonomeStructConf {
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 
+
+
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c3;
 
@@ -85,6 +89,8 @@ extern BatonomeStructConf batonomeDataConf;
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
+
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
