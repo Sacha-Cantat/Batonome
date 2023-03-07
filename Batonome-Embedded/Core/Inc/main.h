@@ -34,12 +34,18 @@ extern "C" {
 #include <imu.h>
 #include "gps.h"
 #include "zigbee.h"
+#include "gestionPWM.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
 #define RX_BUFFER_SIZE 80
+#define PWMLOG 1
+#define ZIGBEELOG 1
+#define GPSLOG 1
+#define IMULOG 1
+
 
 typedef struct CordoGPS {
     long double latitude;
@@ -52,6 +58,19 @@ typedef struct batonomeStruct {
     int autreInformation;
 }BatonomeStruct;
 
+enum DirectionDerive{
+	BABORD,
+	TRIBORD,
+	AVANT,
+};
+
+enum Force{
+	FORCE_0, //140 //160
+ 	FORCE_1, //130 //170
+	FORCE_2, //120 //180
+	FORCE_3, //110 //190
+	FORCE_4, //100 //200
+};
 
 
 
@@ -61,10 +80,23 @@ typedef struct BatonomeStructConf {
 	CordoGPS perimetreNav[20];
 }BatonomeStructConf;
 
+typedef struct derive {
+	enum DirectionDerive directionDerive;
+	enum Force forceDerive;
+	int test;
+}Derive;
+
+//TODO GERER le tirant
+typedef struct tirant {
+	enum DirectionDerive directionTirant;
+	enum Force forceTirant ;
+	int test;
+}Tirant;
+
 
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
-
+extern TIM_HandleTypeDef htim1;
 
 
 extern I2C_HandleTypeDef hi2c1;
@@ -77,6 +109,12 @@ extern uint8_t rxData;
 
 extern BatonomeStruct batonomeData;
 extern BatonomeStructConf batonomeDataConf;
+
+extern Derive deriveToSet;
+extern Derive deriveState;
+
+extern Tirant tirantToSet;
+extern Tirant tirantSet;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -96,6 +134,14 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void logPWM(const char *format, ...);
+void logIMU(const char *format, ...);
+void logGPS(const char *format, ...);
+void logZIGBEE(const char *format, ...);
+
+
+
+
 
 /* USER CODE END EFP */
 

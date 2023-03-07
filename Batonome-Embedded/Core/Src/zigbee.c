@@ -9,6 +9,7 @@
 
 #include "cmsis_os.h"
 #include "main.h"
+#include "gestionPWM.h"
 #include "string.h"
 
 #define SIZE_LONG_DOUBLE 8
@@ -172,6 +173,71 @@ void ZigbeeComTask(void *argument)
 
 
 	  char data[] = "Hello World\r\n";
+
+	  static int valstate = 1;
+	  osDelay(1000);
+	  if(valstate)
+	  {
+		  deriveToSet.directionDerive=TRIBORD;
+		  deriveToSet.forceDerive=FORCE_4;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=TRIBORD;
+		  deriveToSet.forceDerive=FORCE_3;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=TRIBORD;
+		  deriveToSet.forceDerive=FORCE_2;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=TRIBORD;
+		  deriveToSet.forceDerive=FORCE_1;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=TRIBORD;
+		  deriveToSet.forceDerive=FORCE_0;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+
+		  osDelay(1000);
+
+
+		  deriveToSet.directionDerive=AVANT;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=BABORD;
+		  deriveToSet.forceDerive=FORCE_0;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=BABORD;
+		  deriveToSet.forceDerive=FORCE_1;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=BABORD;
+		  deriveToSet.forceDerive=FORCE_2;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=BABORD;
+		  deriveToSet.forceDerive=FORCE_3;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+		  deriveToSet.directionDerive=BABORD;
+		  deriveToSet.forceDerive=FORCE_4;
+		  setCommandBato(REQUEST_COMMAND_DERIVE);
+		  osDelay(1000);
+
+
+
+
+	  }
 	 // HAL_UART_Transmit(&huart1, (uint8_t*)data, sizeof(data), HAL_MAX_DELAY);
 	 // HAL_UART_Transmit_IT(&huart2, data, sizeof (data));
 
@@ -192,7 +258,7 @@ void zigbee_Init()
 	osThreadId_t zigbeeComHandle;
 	const osThreadAttr_t zigbee_com_attributes = {
 	  .name = "zigbee_com",
-	  .stack_size = 128 * 4,
+	  .stack_size = 256 * 4,
 	  .priority = (osPriority_t) osPriorityHigh,
 	};
 	printf("Start task Zigbee \n");

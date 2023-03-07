@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include <stdarg.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -59,6 +60,8 @@ TIM_HandleTypeDef htim1;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
+
+
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
@@ -76,9 +79,8 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
-
+static void MX_TIM1_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -98,6 +100,57 @@ PUTCHAR_PROTOTYPE
   HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
   return ch;
 }
+
+
+
+void logPWM(const char *format, ...)
+{
+#ifdef PWMLOG
+	va_list args;
+	char new_format[100]; // Définissez la taille de la chaîne selon vos besoins
+	sprintf(new_format, "PWMLOG : %s", format);
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+#endif
+}
+
+void logZIGBEE(const char *format, ...)
+{
+#ifdef ZIGBEELOG
+	va_list args;
+	char new_format[100]; // Définissez la taille de la chaîne selon vos besoins
+	sprintf(new_format, "ZIGBEELOG : %s", format);
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
+#endif
+}
+
+void logGPS(const char *format, ...)
+{
+#ifdef GPSLOG
+	va_list args;
+	char new_format[100]; // Définissez la taille de la chaîne selon vos besoins
+	sprintf(new_format, "GPSLOG : %s", format);
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
+#endif
+
+}
+
+void logIMU(const char *format, ...)
+{
+#ifdef IMULOG
+	va_list args;
+	char new_format[100]; // Définissez la taille de la chaîne selon vos besoins
+	sprintf(new_format, "IMULOG : %s", format);
+	va_start(args, format);
+	vprintf(format, args);
+	va_end(args);
+#endif
+}
 /* USER CODE END 0 */
 
 /**
@@ -112,7 +165,8 @@ int main(void)
 
   /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick.   HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -131,14 +185,14 @@ int main(void)
   MX_I2C1_Init();
   MX_I2C3_Init();
   MX_USART1_UART_Init();
-  MX_TIM1_Init();
   MX_USART2_UART_Init();
-
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
   printf("Welcome BATONOME V1.0.0\n");
-  gps_Init();
-  imu_Init();
+  //gps_Init();
+  //imu_Init();
   zigbee_Init();
+  gestionPWM_Init();
   HAL_UART_Receive_IT (&huart1, &rxData, 1);
 
   /* USER CODE END 2 */
@@ -482,8 +536,8 @@ static void MX_USART2_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
-  HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_1);
-      TIM1->CCR1 = 150; //100 200
+
+
 
   /* USER CODE END USART2_Init 2 */
 
@@ -527,7 +581,6 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     osDelay(1);
-    TIM1->CCR1 = 6;
 	//PRINT("Step: 0\n");
 	/*osDelay(2000);
 	TIM1->CCR1 = 10;
