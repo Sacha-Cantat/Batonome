@@ -64,12 +64,12 @@ enum DirectionDerive{
 	AVANT,
 };
 
-enum Force{
-	FORCE_0, //140 //160
- 	FORCE_1, //130 //170
-	FORCE_2, //120 //180
-	FORCE_3, //110 //190
-	FORCE_4, //100 //200
+enum Power{
+	POWER_0, //140 //160
+	POWER_1, //130 //170
+	POWER_2, //120 //180
+	POWER_3, //110 //190
+	POWER_4, //100 //200
 };
 
 
@@ -82,14 +82,14 @@ typedef struct BatonomeStructConf {
 
 typedef struct derive {
 	enum DirectionDerive directionDerive;
-	enum Force forceDerive;
+	enum Power forceDerive;
 	int test;
 }Derive;
 
 //TODO GERER le tirant
 typedef struct tirant {
 	enum DirectionDerive directionTirant;
-	enum Force forceTirant ;
+	enum Power forceTirant ;
 	int test;
 }Tirant;
 

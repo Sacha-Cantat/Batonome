@@ -1,7 +1,5 @@
-from ctypes import sizeof
-import sys
 from tkinter import Canvas
-import threading
+
 
 import customtkinter
 import PIL
@@ -10,35 +8,10 @@ from PIL import Image,ImageTk
 import os
 from serial.tools import list_ports
 import serial
-import struct
-import time
-import unittest
 
 
 
 customtkinter.set_default_color_theme("blue")
-
-class Compass(customtkinter.CTkCanvas):
-    def __init__(self, master=None, **kwargs):
-        super().__init__(master, **kwargs)
-
-        # Dessinez la boussole
-
-  
-        self.create_oval(50, 50, 250, 250, fill="white", outline="black")
-        self.create_text(150, 70, text="N", font=("Arial", 16))
-        self.create_text(245, 150, text="E", font=("Arial", 16))
-        self.create_text(150, 240, text="S", font=("Arial", 16))
-        self.create_text(55, 150, text="W", font=("Arial", 16))
-
-        # Dessinez la flèche
-        self.arrow = self.create_polygon(150, 100, 145, 120, 155, 120, fill="red")
-
-    def set_angle(self, angle):
-        # Mettez à jour l'angle de la flèche
-        self.coords(self.arrow, 150, 100, 145, 120, 155, 120, 150, 130)
-        self.itemconfigure(self.arrow, fill="red")
-        self.rotate(angle, 150, 150)
 
 
 class App(customtkinter.CTk):
@@ -66,19 +39,6 @@ class App(customtkinter.CTk):
         self.listPortName = []
         self.listPortInit()
         self.com = "COM?"
-        self.xbee = None
-        self.timer=None
-        self.countLine = "1.0"
-        self.latitude = 0
-        self.longitude = 0
-        self.angle = 0
-        self.sizeDataToreceive = 24
-        self.firstDataReceived = False
-        self.synchroRequest = False
-        self.comandSerial = 1
-        
-        #Tableau de 3 booleen pour savoir si le bateau est connecté
-        self.boatConnected = [False,False,False]
             
         
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets/Icons")
@@ -90,16 +50,12 @@ class App(customtkinter.CTk):
         self.disconnected_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "disconnected.png"))
                                                         , dark_image=Image.open(os.path.join(image_path, "disconnected.png")), size=(30, 30))
 
-        self.connected_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "connected.png"))
-                                                        , dark_image=Image.open(os.path.join(image_path, "connected.png")), size=(30, 30))
-
         self.marker_list = []
         #InitZone
         self.initZoneValue = False
         self.listeGpsPoints = []
         self.baliseState = False
         self.baliseGPSCordinate = (0,0)
-        self.nbGPSCoord = b'0'
 
         # ============ create two CTkFrames ============
 
@@ -164,15 +120,6 @@ class App(customtkinter.CTk):
         self.frame_right = customtkinter.CTkFrame(master=self.frame_setting, width=1200, corner_radius=0,fg_color = "#585858")
         self.frame_right.grid(row=0, column=1, rowspan=1, pady=0, padx=0, sticky="nsew")
 
-        #Create the left frame_navigation
-        self.frame_left_navigation = customtkinter.CTkFrame(master=self.frame_navigation, width=100, corner_radius=0,fg_color = "#585858")
-        self.frame_left_navigation.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
-
-        #create the right frame_navigation
-        self.frame_right_navigation = customtkinter.CTkFrame(master=self.frame_navigation, width=1200, corner_radius=0,fg_color = "#585858")
-        self.frame_right_navigation.grid(row=0, column=1, rowspan=1, pady=0, padx=0, sticky="nsew")
-
-
         # ============ header ============
 
         self.frame_header.grid_columnconfigure(1, weight=1)
@@ -186,18 +133,11 @@ class App(customtkinter.CTk):
         self.frame_header_right.grid(row=0, column=1, padx=0, pady=0, sticky="nse")
 
         
-        self.button_navigation = customtkinter.CTkButton(self.frame_nav, corner_radius=0, height=40, border_spacing=10, text="Navigation", image = self.navigation_image,
-                                                   fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
-                                                   anchor="w", command=self.navigation_button_event)
-        self.button_navigation.grid(row=1, column=0, padx=0, pady=0, sticky="ew")
-        self.button_navigation.configure()
 
         # #Ajout du bouton connect
-        self.button_connect = customtkinter.CTkButton(self.frame_header_right,  height=30,width=60, text=None, image = self.disconnected_image,
-                                                   fg_color="red", hover_color="#ff2700",
-                                                    command=self.connect)
-        #changer la couleur du bouton
-        self.button_connect.grid(row=0, column=1, padx=(20, 20), pady=(10, 0),sticky="nse")
+        self.button_connect = customtkinter.CTkButton(self.frame_header_right, image=self.disconnected_image,text=None,width=60, height=30 ,fg_color="red", hover_color = "#ff2700",command = self.connect)
+        self.button_connect =  self.button_connect.grid(row=0, column=1, padx=(20, 20), pady=(10, 0),sticky="nse")
+        #reduire la taille du bouton
         
 
         self.button_COM = customtkinter.CTkOptionMenu(self.frame_header_right, values=self.listPortName,width=90, height=30, command=self.majPortCom)
@@ -206,12 +146,8 @@ class App(customtkinter.CTk):
         self.LogTextbox = customtkinter.CTkTextbox(master=self.frame_log, height=50,corner_radius=0,text_color="white", fg_color="black" ,state = "normal")
         self.LogTextbox.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
 
-        self.LogTextbox.insert("0.0", "Log...\n")  # insert at line 0 character 0
-        self.LogTextbox.insert("2.0", "Lag...\n")  # insert at line 0 character 0
-        self.LogTextbox.insert("3.0", "Lug...\n")  # insert at line 0 character 0
-
-
-        #self.LogTextbox = self.LogTextbox.get("0.0", "end")  # get text from line 0 character 0 till the end
+        self.LogTextbox.insert("0.0", "Log...")  # insert at line 0 character 0
+        self.LogTextbox = self.LogTextbox.get("0.0", "end")  # get text from line 0 character 0 till the end
 
         # ============ frame_app ============
 
@@ -219,7 +155,7 @@ class App(customtkinter.CTk):
 
         #Add Button settings
         self.button_settings = customtkinter.CTkButton(self.frame_nav, corner_radius=0, height=40, border_spacing=10, text="Settings",image = self.gps_image,
-                                                    fg_color=("gray75", "gray25"),text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                                                    fg_color="transparent",text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                                    anchor="w", command=self.settings_button_event)
         self.button_settings.grid(row=0, column=0, padx=0, pady=0, sticky="ew")
 
@@ -228,7 +164,7 @@ class App(customtkinter.CTk):
                                                    fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                                    anchor="w", command=self.navigation_button_event)
         self.button_navigation.grid(row=1, column=0, padx=0, pady=0, sticky="ew")
-        self.button_navigation.configure()
+
        
         
 
@@ -274,7 +210,7 @@ class App(customtkinter.CTk):
         self.map_option_menu.grid(row=4, column=0, padx=(20, 20), pady=(10, 0))
 
        # Bouton pour envoyer les infos au bateau
-        self.button_SendBoat = customtkinter.CTkButton(master=self.frameBaliseGPS,text="Syncronisation", command = self.synchBatonome)
+        self.button_SendBoat = customtkinter.CTkButton(master=self.frameBaliseGPS,text="Syncronisation")
         self.button_SendBoat.grid(row=5, column=0, padx=(20, 20), pady=(10, 0))
         # ============ frame_right ============
 
@@ -304,50 +240,6 @@ class App(customtkinter.CTk):
         self.map_widget.set_address("Berlin")
         self.map_option_menu.set("OpenStreetMap")
         self.button_COM.set("COM?")
-
-        # ============ frame_left_navigation ============
-
-        compass = customtkinter.CTkCanvas(self.frame_right_navigation, width=300, height=300, bg="white")
-        compass.grid(row=0, column=0, padx=(0, 0), pady=(0, 0))
-
-        compass.create_oval(50, 50, 250, 250, fill="white", outline="black")
-        compass.create_text(150, 70, text="N", font=("Arial", 16))
-        compass.create_text(245, 150, text="E", font=("Arial", 16))
-        compass.create_text(150, 240, text="S", font=("Arial", 16))
-        compass.create_text(55, 150, text="W", font=("Arial", 16))
-
-        # Dessinez la flèche
-        arrow = compass.create_polygon(150, 100, 145, 120, 155, 120, fill="red")
-
-        # frame right navigation
-
-        self.frame_right_navigation.grid_rowconfigure(0, weight=1)
-        self.frame_right_navigation.grid_columnconfigure(0, weight=1)
-
-
-        #Carte de navigation
-        self.map_widget_navigation = TkinterMapView(self.frame_right_navigation, corner_radius=0)
-        self.map_widget_navigation.grid(row=0, rowspan=1, column=0, columnspan=3, sticky="nswe", padx=(0, 0), pady=(0, 0))
-
-        
-        #Gestion touche
-        self.bind("<KeyPress>", self.key_up_pressed)
-        
-
-    def set_angle(self, angle):
-        # Mettez à jour l'angle de la flèche
-        self.coords(self.arrow, 150, 100, 145, 120, 155, 120, 150, 130)
-        self.itemconfigure(self.arrow, fill="red")
-        self.rotate(angle, 150, 150)
-
-    
-
-
-    
-    def addLog(self, text):
-        self.LogTextbox.insert(self.countLine, text+"\n")  # insert at line 0 character 0
-        #self.countLine = self.countLine + 1
-       # print(self.countLine)
         
     
     def settings_button_event(self):
@@ -373,11 +265,6 @@ class App(customtkinter.CTk):
 
     def search_event(self, event=None):
         self.map_widget.set_address(self.entry.get())
-
-    def setGPSOnMapNavigation(self, lat, lon):
-        # set current widget position and zoom
-        self.map_widget_navigation.set_position(lat, lon)  # Paris, France
-        self.map_widget_navigation.set_zoom(15)
 
     def baliseGPS(self, event=None):
         if (self.baliseState==False):
@@ -405,20 +292,15 @@ class App(customtkinter.CTk):
         print(self.initZoneValue)
         print(self.baliseState)
         if (self.initZoneValue==False):
-            #On vérifie que moins de 11 points ont été définis:
-            if (len(self.listeGpsPoints) < 10):
-                log = "Point GPS  "+str(len(self.listeGpsPoints)+1)+ "/10 :" +str(coordinates_tuple)
-                self.addLog(log)
-                self.marker_list.append(self.map_widget.set_marker(coordinates_tuple[0], coordinates_tuple[1]))
-                self.listeGpsPoints.append(coordinates_tuple)
-                print(self.listeGpsPoints)
-            else:
-                self.addLog("Vous avez défini 10 points, vous ne pouvez plus en ajouter")
+            print("Left click event with coordinates:", coordinates_tuple)
+            self.marker_list.append(self.map_widget.set_marker(coordinates_tuple[0], coordinates_tuple[1]))
+            self.listeGpsPoints.append(coordinates_tuple)
+            print(self.listeGpsPoints)
         else:
             if (self.baliseState==False):
                 #self.baliseGPS()
                 self.markerBaliseGPS = self.map_widget.set_marker(coordinates_tuple[0], coordinates_tuple[1])
-                self.baliseGPSCordinate = (float(coordinates_tuple[0]) , float(coordinates_tuple[1]))
+                self.baliseGPSCordinate = (float(coordinates_tuple[0]) , float(coordinates_tuple[0]))
                 #Positionne les info GPS dans les textboxes
                 self.textBaliseLat.delete("0.0", "end")
                 self.textBaliseLon.delete("0.0", "end")
@@ -431,19 +313,8 @@ class App(customtkinter.CTk):
     def initZone(self, event=None):
         if(self.initZoneValue == False):
             self.initZoneValue = True
-            #Dessine le perimetre de navigation
             self.polygon_1 = self.map_widget.set_polygon(self.listeGpsPoints, fill_color=None,  outline_color="red",  border_width=12, name="Zone de navigation")
-            #Affiche le cadenas lock sur le bouton
             self.button_1.configure(image=self.imageLock)
-
-            #Si Nb de point GPS < 20, on comble la difference
-            nbGPScoordToFill = len(self.listeGpsPoints)
-            if (nbGPScoordToFill != 10):
-                for i in range (nbGPScoordToFill,10):
-                    self.listeGpsPoints.append((float(0),float(0)))
-
-            print(self.listeGpsPoints)
-
         else:
             self.initZoneValue = False
             self.polygon_1.delete()
@@ -464,7 +335,11 @@ class App(customtkinter.CTk):
         self.listPortName = []
         for port in self.listPort:
             self.listPortName.append(port.device)
-
+    
+    def addLog(self, text):
+        self.countLine = 1
+        #self.LogTextbox.insert("0.0", text)  # insert at line 0 character 0
+        self.countLine = self.countLine + 1
 
     def connect(self):
         if(self.com == "COM?"):
@@ -477,151 +352,16 @@ class App(customtkinter.CTk):
             self.addLog("Connexion au port COM : " + self.com)
             self.addLog("Veuillez patienter...")
             self.addLog("")
-            self.startThreadSerial()
-            
-    def startThreadSerial(self):
-        #On emet toutes les secondes
-        self.timer = threading.Timer(1.0, self.serialEmit)
-        self.timer.start()
-        #On lance le thread de reception
-        self.thread = threading.Thread(target=self.serialThread)
-        self.thread.start()
 
-    def connectionLost(self):
-        #On passe le bouton connect en orange
-        self.button_connect.configure(fg_color="red",image = self.disconnected_image)
-        pass
-
-    def connectionEstablished(self):
-        #On passe le bouton connect en bleu
-        self.button_connect.configure(fg_color="#1f6aa5",image = self.connected_image)
-       
-        pass
-
-    def serialThread(self):
-        while True:
-            #Si des data sont sur le port serie on affiche
-            #I receive data from the serial port, data is a structure, i want to decode the data, the structure is composed by double, double, float, int
-            
-            received_data = self.xbee.read(self.sizeDataToreceive)
-            #si on a pas recu de données depuis 5 secondes
-            
-
-            #si on a recu des données
-            if received_data:
-
-                if(self.firstDataReceived == False):
-                    self.connectionEstablished()
-                    self.firstDataReceived = True
-                    self.lastDataReceived = time.time()
-
-                print(received_data)
-                #first 2 bytes are the latitude it's a double
-                latitude = struct.unpack('d', received_data[0:8])[0]
-                #next 2 bytes are the longitude it's a double
-                longitude = struct.unpack('d', received_data[8:16])[0]
-                #next 4 bytes are the angle it's a float
-                angle = struct.unpack('f', received_data[16:20])[0]
-                print (latitude)
-                print (longitude)
-                print (angle)
-                
-                
-
-                
-                
-                self.lastDataReceived = time.time()
-                
-
-            if (time.time() - self.lastDataReceived) > 5:
-                print("Perte de connexion avec le bateau")
-                self.addLog("Perte de connexion avec le bateau")
-                self.connectionLost()
-            
+            #self.device = XBeeDevice(self.com, 9600)
+            self.sendDataToBoat("Batonome Vaincra")
 
 
-            if self.xbee.in_waiting > 0:
-                data = self.xbee.readline().decode().rstrip()
-                print(data)
-                self.addLog(data)
-    
-    def synchBatonome(self):
-        self.comandSerial = 3
-        self.addLog("Synchronisation avec le bateau en cours...")
-        self.addLog("")
-    
-    
-    
-    def serialEmit(self):
-        if self.comandSerial == 1:
-            
-            data = struct.pack('ccc',b'A',b'0',b'\n')
-            self.xbee.write(data)
-            print(data)
-            print("send 4")
-
-        elif self.comandSerial == 2:
-            
-            #Use pack to pack two char into variable dede
-            print(struct.calcsize('cc'))
-            dede = struct.pack('ccc',b'B',b'self.sizeReceiveGP',b'\n')
-            self.xbee.write(dede)
-            print("send 6")
-            self.synchroRequest = True
-            self.comandSerial = 3
-            
-
-        elif self.comandSerial == 3:
-            #Aujourd'hui on doit envoyer 4 coordonnés GPS pour faire le tracé
-            data = struct.pack('ccddddddddddddddddddddddc',b'B', b'0',self.baliseGPSCordinate[0],self.baliseGPSCordinate[1],self.listeGpsPoints[0][0], self.listeGpsPoints[0][1],self.listeGpsPoints[1][0], self.listeGpsPoints[1][1], self.listeGpsPoints[2][0], self.listeGpsPoints[2][1], self.listeGpsPoints[3][0], self.listeGpsPoints[3][1], self.listeGpsPoints[4][0], self.listeGpsPoints[4][1],self.listeGpsPoints[5][0], self.listeGpsPoints[5][1], self.listeGpsPoints[6][0], self.listeGpsPoints[6][1], self.listeGpsPoints[7][0], self.listeGpsPoints[7][1],self.listeGpsPoints[8][0], self.listeGpsPoints[8][1],self.listeGpsPoints[9][0], self.listeGpsPoints[9][1], b'\n')
-            # dddddddddddddddddddd   self.listeGpsPoints[5][0], self.listeGpsPoints[5][1], self.listeGpsPoints[6][0], self.listeGpsPoints[6][1], self.listeGpsPoints[7][0], self.listeGpsPoints[7][1],self.listeGpsPoints[8][0], self.listeGpsPoints[8][1],self.listeGpsPoints[9][0], self.listeGpsPoints[9][1],b'\n')
-            print(str(type(data)))
-            print(str(len(data)))
-            print(self.listeGpsPoints)
-            if (data.find('\n') < 2):
-                self.xbee.write(data)
-                self.addLog("Configuration envoyée au bateau")
-            else : 
-                self.addLog("Erreur de transmission des données, retour chariot dans la trame")
-            print(data)
-            self.comandSerial = 3
-        
-        elif self.comandSerial == 4: #Touche RIGHT
-            data = struct.pack('ccc',b'C',b'0',b'\n')
-            self.xbee.write(data)
-            print(data)
-            self.comandSerial = 1
-
-        elif self.comandSerial == 5: #Touche LEFT
-            data = struct.pack('ccc',b'C',b'1',b'\n')
-            self.xbee.write(data)
-            print(data)
-            self.comandSerial = 1
-
-        
-        
-        elif self.comandSerial == 6: #Touche UP
-            data = struct.pack('ccc',b'D',b'0',b'\n')
-            self.xbee.write(data)
-            print(data)
-            self.comandSerial = 1
-
-        elif self.comandSerial == 7: #Touche DOWN
-            data = struct.pack('ccc',b'D',b'1',b'\n')
-            self.xbee.write(data)
-            print(data)
-            self.comandSerial = 1
-
-        elif self.comandSerial == 8: #Touche SPACE
-            data = struct.pack('ccc',b'C',b'2',b'\n')
-            self.xbee.write(data)
-            print(data)
-            self.comandSerial = 1
-
-            
-            
-        self.timer = threading.Timer(1.0, self.serialEmit)
-        self.timer.start()
+    def sendDataToBoat(self, textToSend):
+        print("Envoi de : " + textToSend)
+        # self.device.open()
+        # self.device.send_data_broadcast(textToSend)
+        # self.device.close()
     
     def majPortCom(self,new_com: str):
         self.com = new_com
@@ -642,58 +382,19 @@ class App(customtkinter.CTk):
 
     def initCOM(self):
         # Ouvre la liaison série sur le port sélectionné à une vitesse de 9600 bauds
-        self.xbee = serial.Serial(self.com, 9600)
+        xbee = serial.Serial(self.com, 9600)
+        
+
     
     
 
     def on_closing(self, event=0):
         self.destroy()
-        #Bug si on clos le thread timer avant de fermer la fenêtre
-        self.timer.cancel()
 
     def start(self):
         self.mainloop()
-
-    def key_up_pressed(self,event):
-        #On gère les touche seulement si on est dans la frame navigation
-        if self.frame_right_navigation.winfo_ismapped():
-            if event.keysym == "Up":
-                print("Key up pressed")
-                self.comandSerial = 6
-            elif event.keysym == "Down":
-                print("Key Down pressed")
-                self.comandSerial = 7
-            elif event.keysym == "Left":
-                print("Key Left pressed")
-                self.comandSerial = 5
-            elif event.keysym == "Right":
-                print("Key Right pressed")
-                self.comandSerial = 4
-            elif event.keysym == "space":
-                print("Space Right pressed")
-                self.comandSerial = 8
-
-
-def thread1():
-    t1 = threading.Thread(target=serie)
-    t1.start()
-
-def thread2():
-    t2 = threading.Thread(target=graphic)
-    t2.start()
-
-def serie():
-    print("Thread 1")
-
-
-
-def graphic():
-    pass
-    
-
 
 
 if __name__ == "__main__":
     app = App()
     app.start()
-

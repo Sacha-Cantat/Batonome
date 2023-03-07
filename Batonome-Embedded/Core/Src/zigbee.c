@@ -83,6 +83,55 @@ void receiveConf()
 
 
 }
+void batonomeControl(enum key_pressed key)
+{
+	if (key == RIGHT)
+		{
+			if (deriveState.directionDerive==TRIBORD && deriveState.forceDerive < 4 )
+			{
+				deriveToSet.forceDerive = deriveState.forceDerive+1;
+			}
+			else if(deriveState.directionDerive==BABORD && deriveState.forceDerive > 0)
+			{
+				deriveToSet.forceDerive = deriveState.forceDerive-1;
+				deriveToSet.directionDerive = TRIBORD;
+				deriveToSet.forceDerive = POWER_0;
+			}
+			else if(deriveState.directionDerive==AVANT)
+			{
+				deriveToSet.directionDerive = TRIBORD;
+				deriveToSet.forceDerive = POWER_0;
+			}
+			setCommandBato(REQUEST_COMMAND_DERIVE);
+		}
+	else if (key == LEFT)
+		{
+		if (deriveState.directionDerive==BABORD && deriveState.forceDerive < 4 )
+		{
+			deriveToSet.forceDerive = deriveState.forceDerive+1;
+		}
+		else if(deriveState.directionDerive==TRIBORD && deriveState.forceDerive > 0)
+		{
+			deriveToSet.forceDerive = deriveState.forceDerive-1;
+			deriveToSet.directionDerive = TRIBORD;
+			deriveToSet.forceDerive = POWER_0;
+		}
+		else if(deriveState.directionDerive==AVANT)
+		{
+			deriveToSet.directionDerive = BABORD;
+			deriveToSet.forceDerive = POWER_0;
+		}
+		setCommandBato(REQUEST_COMMAND_DERIVE);
+
+		}
+	else if (key == SPACE)
+			{
+				deriveToSet.directionDerive = AVANT;
+				deriveToSet.forceDerive = POWER_0;
+			}
+			setCommandBato(REQUEST_COMMAND_DERIVE);
+}
+
 void processData(int sizeData)
 {
 	if (UART1_rxBuffer[0] == 'A')
@@ -97,6 +146,39 @@ void processData(int sizeData)
 			receiveConf();
 			//HAL_UART_Receive_IT (&huart1, UART1_rxBuffer, 2);
 		}
+
+		else if(UART1_rxBuffer[0]== 'C') //Touche RIGHT ou LEFT
+		{
+			if (UART1_rxBuffer[1]== '0')
+			{
+				batonomeControl(RIGHT);
+			}
+
+			if (UART1_rxBuffer[1]== '1')
+			{
+				batonomeControl(LEFT);
+			}
+
+			if (UART1_rxBuffer[1]== '2')
+			{
+				batonomeControl(SPACE);
+			}
+
+			//HAL_UART_Receive_IT (&huart1, UART1_rxBuffer, 2);
+		}
+		else if(UART1_rxBuffer[0]== 'D') //Touche UP ou DOWN
+		{
+			if (UART1_rxBuffer[1]== '0')
+			{
+				batonomeControl(UP);
+			}
+
+			if (UART1_rxBuffer[1]== '1')
+			{
+				batonomeControl(DOWN);
+			}
+		}
+
 }
 
 
@@ -175,10 +257,10 @@ void ZigbeeComTask(void *argument)
 	  char data[] = "Hello World\r\n";
 
 	  static int valstate = 1;
-	  osDelay(1000);
+	  //osDelay(1000);
 	  if(valstate)
 	  {
-		  deriveToSet.directionDerive=TRIBORD;
+		 /* deriveToSet.directionDerive=TRIBORD;
 		  deriveToSet.forceDerive=FORCE_4;
 		  setCommandBato(REQUEST_COMMAND_DERIVE);
 		  osDelay(1000);
@@ -232,7 +314,7 @@ void ZigbeeComTask(void *argument)
 		  deriveToSet.directionDerive=BABORD;
 		  deriveToSet.forceDerive=FORCE_4;
 		  setCommandBato(REQUEST_COMMAND_DERIVE);
-		  osDelay(1000);
+		  osDelay(1000);*/
 
 
 

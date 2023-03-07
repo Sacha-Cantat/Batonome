@@ -14,6 +14,14 @@ void zigbee_Init();
 
 void zigbeeTxCpltCallback();
 
+enum key_pressed{
+	UP, //140 //160
+ 	DOWN, //130 //170
+	RIGHT, //120 //180
+	LEFT, //110 //190
+	SPACE
+};
+
 
 
 
