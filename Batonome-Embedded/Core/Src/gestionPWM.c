@@ -22,7 +22,7 @@ Derive deriveToSet;
 Derive deriveState;
 
 Tirant tirantToSet;
-Tirant tirantSet;
+Tirant tirantState;
 
 
 
@@ -44,35 +44,41 @@ void gestionPWM_Task(void *argument)
         case INIT:
         	//Démarrage de la PWM
         	TIM1->CCR1 = valPWMDerive;
+        	TIM1->CCR4 = valPWMTirant;
         	HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_1);
+        	HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_4);
+        	tirantToSet.tirantVoile = AVANT;
+        	tirantToSet.forceTirant = POWER_0;
+
         	stateCommandBato = WAIT_FOR_COMMAND;
-        	logPWM("Initalisation de la commande PWM");
+        	//logPWM("Initalisation de la commande PWM");
         	break;
         case WAIT_FOR_COMMAND:
             /* code */
             break;
         
         case REQUEST_COMMAND_DERIVE:
-        	logPWM("Demande de commande de la dérive");
+        	//logPWM("Demande de commande de la dérive");
         	if (deriveToSet.directionDerive == TRIBORD)
         	{
         		//Direction Tribord
         		valPWMDerive = 160 + (10*deriveToSet.forceDerive) ;
-        		logPWM("Tribord, force : %d",deriveToSet.forceDerive);
+        		//logPWM("Tribord, force : %d",deriveToSet.forceDerive);
         	}
         	else if (deriveToSet.directionDerive == BABORD)
         	{
         		//Direction Avant Toute !
         		valPWMDerive = 140 - (10*deriveToSet.forceDerive) ;
-        		logPWM("Babord, force : %d",deriveToSet.forceDerive);
+        		//logPWM("Babord, force : %d",deriveToSet.forceDerive);
         	}
         	else //Direction Avant Toute !
         	{
         		valPWMDerive = 150; //100 200;
-        		logPWM("Avant Toute !");
+        		//logPWM("Avant Toute !");
         	}
         	//MAJ Val Derive
         	TIM1->CCR1 = valPWMDerive;
+
         	//Copy
         	deriveState.directionDerive = deriveToSet.directionDerive;
         	deriveState.forceDerive = deriveToSet.forceDerive;
@@ -81,8 +87,32 @@ void gestionPWM_Task(void *argument)
             break;
 
         case REQUEST_COMMAND_TIRANT:
-        	logPWM("Demande de commande de la dérive");
+        	//logPWM("Demande de commande de la dérive");
             /* code */
+        	//logPWM("Demande de commande de la dérive");
+			if (tirantToSet.tirantVoile == MOU)
+			{
+				//Direction Tribord
+				valPWMTirant = 160 + (10*tirantToSet.forceTirant) ;
+				//logPWM("Tribord, force : %d",deriveToSet.forceDerive);
+			}
+			else if (tirantToSet.tirantVoile == DUR)
+			{
+				//Direction Avant Toute !
+				valPWMTirant = 140 - (10*tirantToSet.forceTirant) ;
+				//logPWM("Babord, force : %d",deriveToSet.forceDerive);
+			}
+			else //Direction Avant Toute !
+			{
+				valPWMTirant = 150;
+				//logPWM("Avant Toute !");
+			}
+			//MAJ Val Derive
+			TIM1->CCR4 = valPWMTirant;
+
+			//Copy
+			tirantState.tirantVoile = tirantToSet.tirantVoile;
+			tirantState.forceTirant = tirantToSet.forceTirant;
         	stateCommandBato = WAIT_FOR_COMMAND;
             break;
         
@@ -109,5 +139,5 @@ void gestionPWM_Init()
 
 	pwmHandle = osThreadNew(gestionPWM_Task, NULL, &pwm_attributes);
 	stateCommandBato = INIT;
-	logPWM("Initialisation de la tache PWM");
+	//logPWM("Initialisation de la tache PWM");
 }

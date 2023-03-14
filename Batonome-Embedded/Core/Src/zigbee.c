@@ -35,6 +35,9 @@ uint8_t data[2000];
 
 
 void sendBatonomeData(void) {
+	batonomeData.stateDerive = deriveState;
+	batonomeData.stateTirant = tirantState;
+	printf(sizeof(deriveState));
    uint8_t buffer[sizeof(batonomeData)];
    uint8_t* structPtr = (uint8_t*) &batonomeData;
    for (int i =0 ; i<sizeof(batonomeData);i++)
@@ -85,7 +88,7 @@ void receiveConf()
 }
 void batonomeControl(enum key_pressed key)
 {
-	if (key == RIGHT)
+	if (key == LEFT)
 		{
 			if (deriveState.directionDerive==TRIBORD && deriveState.forceDerive < 4 )
 			{
@@ -94,8 +97,6 @@ void batonomeControl(enum key_pressed key)
 			else if(deriveState.directionDerive==BABORD && deriveState.forceDerive > 0)
 			{
 				deriveToSet.forceDerive = deriveState.forceDerive-1;
-				deriveToSet.directionDerive = TRIBORD;
-				deriveToSet.forceDerive = POWER_0;
 			}
 			else if(deriveState.directionDerive==AVANT)
 			{
@@ -104,32 +105,76 @@ void batonomeControl(enum key_pressed key)
 			}
 			setCommandBato(REQUEST_COMMAND_DERIVE);
 		}
-	else if (key == LEFT)
-		{
-		if (deriveState.directionDerive==BABORD && deriveState.forceDerive < 4 )
-		{
-			deriveToSet.forceDerive = deriveState.forceDerive+1;
-		}
-		else if(deriveState.directionDerive==TRIBORD && deriveState.forceDerive > 0)
-		{
-			deriveToSet.forceDerive = deriveState.forceDerive-1;
-			deriveToSet.directionDerive = TRIBORD;
-			deriveToSet.forceDerive = POWER_0;
-		}
-		else if(deriveState.directionDerive==AVANT)
-		{
-			deriveToSet.directionDerive = BABORD;
-			deriveToSet.forceDerive = POWER_0;
-		}
-		setCommandBato(REQUEST_COMMAND_DERIVE);
+	else if (key == RIGHT)
+			{
+			if (deriveState.directionDerive==BABORD && deriveState.forceDerive < 4 )
+			{
+				deriveToSet.forceDerive = deriveState.forceDerive+1;
+			}
+			else if(deriveState.directionDerive==TRIBORD && deriveState.forceDerive > 0)
+			{
+				deriveToSet.forceDerive = deriveState.forceDerive-1;
+			}
+			else if(deriveState.directionDerive==AVANT)
+			{
+				deriveToSet.directionDerive = BABORD;
+				deriveToSet.forceDerive = POWER_0;
+			}
+			setCommandBato(REQUEST_COMMAND_DERIVE);
 
 		}
+	else if (key == DOWN)
+			{
+			if (tirantState.tirantVoile==MOU && tirantState.forceTirant < 4 )
+			{
+				tirantToSet.forceTirant = tirantState.forceTirant+1;
+			}
+			else if(tirantState.tirantVoile==DUR && tirantState.forceTirant > 0)
+			{
+				tirantToSet.forceTirant = tirantState.forceTirant-1;
+			}
+			else if(tirantState.tirantVoile==REPOS)
+			{
+				tirantToSet.tirantVoile = MOU;
+				tirantToSet.forceTirant = POWER_0;
+			}
+			setCommandBato(REQUEST_COMMAND_TIRANT);
+
+			}
+	else if (key == UP)
+			{
+			if (tirantState.tirantVoile==DUR && tirantState.forceTirant < 4 )
+			{
+				tirantToSet.forceTirant = tirantState.forceTirant+1;
+			}
+			else if(tirantState.tirantVoile==MOU && tirantState.forceTirant > 0)
+			{
+				tirantToSet.forceTirant = tirantState.forceTirant-1;
+			}
+			else if(tirantState.tirantVoile==REPOS)
+			{
+				tirantToSet.tirantVoile = DUR;
+				tirantToSet.forceTirant = POWER_0;
+			}
+			setCommandBato(REQUEST_COMMAND_TIRANT);
+			}
 	else if (key == SPACE)
 			{
 				deriveToSet.directionDerive = AVANT;
 				deriveToSet.forceDerive = POWER_0;
+				tirantToSet.tirantVoile = AVANT;
+				tirantToSet.forceTirant = POWER_0;
+				setCommandBato(REQUEST_COMMAND_DERIVE);
+
 			}
-			setCommandBato(REQUEST_COMMAND_DERIVE);
+	else if (key == ENTER)
+			{
+
+				tirantToSet.tirantVoile = REPOS;
+				tirantToSet.forceTirant = POWER_0;
+				setCommandBato(REQUEST_COMMAND_TIRANT);
+			}
+
 }
 
 void processData(int sizeData)
@@ -176,6 +221,11 @@ void processData(int sizeData)
 			if (UART1_rxBuffer[1]== '1')
 			{
 				batonomeControl(DOWN);
+			}
+
+			if (UART1_rxBuffer[1]== '2')
+			{
+				batonomeControl(ENTER);
 			}
 		}
 

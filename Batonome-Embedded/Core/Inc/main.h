@@ -52,16 +52,18 @@ typedef struct CordoGPS {
     long double longitude;
 }CordoGPS;
 
-typedef struct batonomeStruct {
-	CordoGPS positionGPS;
-    float angle;
-    int autreInformation;
-}BatonomeStruct;
+
 
 enum DirectionDerive{
 	BABORD,
 	TRIBORD,
 	AVANT,
+};
+
+enum TirantVoile{
+	MOU,
+	DUR,
+	REPOS
 };
 
 enum Power{
@@ -83,20 +85,27 @@ typedef struct BatonomeStructConf {
 typedef struct derive {
 	enum DirectionDerive directionDerive;
 	enum Power forceDerive;
-	int test;
 }Derive;
 
 //TODO GERER le tirant
 typedef struct tirant {
-	enum DirectionDerive directionTirant;
+	enum TirantVoile tirantVoile;
 	enum Power forceTirant ;
-	int test;
 }Tirant;
+
+typedef struct batonomeStruct {
+	Derive stateDerive;
+	Tirant stateTirant;
+	CordoGPS positionGPS;
+    float angle;
+    int autreInformation;
+}BatonomeStruct;
 
 
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 
 
 extern I2C_HandleTypeDef hi2c1;
@@ -114,7 +123,7 @@ extern Derive deriveToSet;
 extern Derive deriveState;
 
 extern Tirant tirantToSet;
-extern Tirant tirantSet;
+extern Tirant tirantState;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
