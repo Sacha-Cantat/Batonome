@@ -198,8 +198,9 @@ int main(void)
   //HAL_TIM_PWM_Start(&htim16,TIM_CHANNEL_1);
   //TIM16->CCR1 = 150;
   //gps_Init();
-  imu_Init();
-  zigbee_Init();
+  //imu_Init();
+  //zigbee_Init();
+  windSensor_Init();
   //gestionPWM_Init();
   HAL_UART_Receive_IT (&huart1, &rxDataZigbee, 1);
   HAL_UART_Receive_IT (&huart2, &rxDataGPS, 1);
