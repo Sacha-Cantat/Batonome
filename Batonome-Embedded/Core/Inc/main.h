@@ -113,7 +113,9 @@ extern I2C_HandleTypeDef hi2c3;
 
 extern uint8_t UART1_rxBuffer[RX_BUFFER_SIZE] ;
 extern uint8_t UART1_txBuffer[RX_BUFFER_SIZE] ;
-extern uint8_t rxData;
+extern uint8_t UART2_rxBuffer[RX_BUFFER_SIZE] ;
+extern uint8_t rxDataZigbee;
+extern uint8_t rxDataGPS;
 
 
 extern BatonomeStruct batonomeData;

@@ -235,12 +235,12 @@ void processData(int sizeData)
 void zigbeeTxCpltCallback(){
 	static int indexRxBuffer = 0;
 
-	if (rxData != '\n')
+	if (rxDataZigbee != '\n')
 	{
-		UART1_rxBuffer[indexRxBuffer] = rxData;
+		UART1_rxBuffer[indexRxBuffer] = rxDataZigbee;
 		indexRxBuffer++;
 	}
-	else if (rxData == '\n')
+	else if (rxDataZigbee == '\n')
 	{
 		processData(indexRxBuffer);
 		//RAZ Buffer
@@ -252,7 +252,7 @@ void zigbeeTxCpltCallback(){
 
 
 	}
-	HAL_UART_Receive_IT (&huart1, &rxData, 1);
+	HAL_UART_Receive_IT (&huart1, &rxDataZigbee, 1);
 
 }
 
