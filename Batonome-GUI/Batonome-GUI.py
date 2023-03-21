@@ -72,10 +72,17 @@ class App(customtkinter.CTk):
         self.latitude = 0
         self.longitude = 0
         self.angle = 0
-        self.sizeDataToreceive = 24
+        self.sizeDataToreceive = 32
         self.firstDataReceived = False
         self.synchroRequest = False
         self.comandSerial = 1
+        self.sensDerive = 5
+        self.forceDerive = 5
+        self.sensTirant = 5
+        self.forceTirant = 5
+        self.countUpdatePosition = 0
+
+        
         
         #Tableau de 3 booleen pour savoir si le bateau est connecté
         self.boatConnected = [False,False,False]
@@ -94,6 +101,7 @@ class App(customtkinter.CTk):
                                                         , dark_image=Image.open(os.path.join(image_path, "connected.png")), size=(30, 30))
 
         self.marker_list = []
+        self.marker_list_nav = []
         #InitZone
         self.initZoneValue = False
         self.listeGpsPoints = []
@@ -298,14 +306,43 @@ class App(customtkinter.CTk):
                                                 command=self.search_event)
         self.button_5.grid(row=0, column=1, sticky="w", padx=(12, 0), pady=12)
 
+        #Bouton calibration GPS
+        self.button_6 = customtkinter.CTkButton(master=self.frame_right,
+                                                text="Calibration GPS",
+                                                width=90, state="disabled",
+                                                command=self.calibrationGPS)
+
+        self.button_6.grid(row=0, column=2, sticky="w", padx=(12, 0), pady=12)
+
+
         self.map_widget.add_left_click_map_command(self.left_click_event)
 
         # Set default values
-        self.map_widget.set_address("Berlin")
-        self.map_option_menu.set("OpenStreetMap")
+        #BERLIN
+        self.map_widget.set_address("Nantes")
+        
+        self.map_option_menu.set("Google satellite")
         self.button_COM.set("COM?")
 
         # ============ frame_left_navigation ============
+
+        #Afficher la valeur de self.sensDerive dans frame_left_navigation avec un label :
+        self.labelSensDerive = customtkinter.CTkLabel(self.frame_left_navigation, text="Sens de dérive : ", anchor="w")
+        self.labelSensDerive.grid(pady=(5, 20), padx=(20, 20), row=0, column=0)
+
+        #Afficher la valeur de self.powerDerive dans frame_left_navigation avec un label :
+        self.labelPowerDerive = customtkinter.CTkLabel(self.frame_left_navigation, text="Puissance de dérive : ", anchor="w")
+        self.labelPowerDerive.grid(pady=(5, 20), padx=(20, 20), row=1, column=0)
+
+        #Afficher la valeur de self.sensTirant dans frame_left_navigation avec un label :
+        self.labelSensTirant = customtkinter.CTkLabel(self.frame_left_navigation, text="Sens de tirant : ", anchor="w")
+        self.labelSensTirant.grid(pady=(5, 20), padx=(20, 20), row=2, column=0)
+
+        #Afficher la valeur de self.powerTirant dans frame_left_navigation avec un label :
+        self.labelPowerTirant = customtkinter.CTkLabel(self.frame_left_navigation, text="Puissance de tirant : ", anchor="w")
+        self.labelPowerTirant.grid(pady=(5, 20), padx=(20, 20), row=3, column=0)
+        
+
 
         compass = customtkinter.CTkCanvas(self.frame_right_navigation, width=300, height=300, bg="white")
         compass.grid(row=0, column=0, padx=(0, 0), pady=(0, 0))
@@ -329,6 +366,10 @@ class App(customtkinter.CTk):
         self.map_widget_navigation = TkinterMapView(self.frame_right_navigation, corner_radius=0)
         self.map_widget_navigation.grid(row=0, rowspan=1, column=0, columnspan=3, sticky="nswe", padx=(0, 0), pady=(0, 0))
 
+        #Marker GPS Bateau
+        self.markerBoat =  self.map_widget_navigation.set_marker( 48.858093, 2.294694, "Bato")
+
+
         
         #Gestion touche
         self.bind("<KeyPress>", self.key_up_pressed)
@@ -340,8 +381,17 @@ class App(customtkinter.CTk):
         self.itemconfigure(self.arrow, fill="red")
         self.rotate(angle, 150, 150)
 
-    
+    def displaySensDerive(self, sensDerive):
+        self.labelSensDerive.configure(text="Sens de dérive : " + str(sensDerive))
 
+    def displaySensTirant(self, sensTirant):
+        self.labelSensTirant.configure(text="Sens du tirant : " + str(sensTirant))
+
+    def displayPowerDerive(self, powerDerive):
+        self.labelPowerDerive.configure(text="Power de dérive : " + str(powerDerive))
+
+    def displayPowerTirant(self, powerTirant):
+        self.labelPowerTirant.configure(text="Power du tirant : " + str(powerTirant))
 
     
     def addLog(self, text):
@@ -368,6 +418,10 @@ class App(customtkinter.CTk):
             self.frame_setting.grid_forget()
         if name == "navigation":
             self.frame_navigation.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
+
+            #Set position on map with balise GPS
+            self.setGPSOnMapNavigation(float(self.textBaliseLat.get("0.0", "end")) , float(self.textBaliseLon.get("0.0", "end")))
+            print(float(self.textBaliseLat.get("0.0", "end")))
         else:
             self.frame_navigation.grid_forget()
 
@@ -377,7 +431,7 @@ class App(customtkinter.CTk):
     def setGPSOnMapNavigation(self, lat, lon):
         # set current widget position and zoom
         self.map_widget_navigation.set_position(lat, lon)  # Paris, France
-        self.map_widget_navigation.set_zoom(15)
+        self.map_widget_navigation.set_zoom(10)
 
     def baliseGPS(self, event=None):
         if (self.baliseState==False):
@@ -516,15 +570,56 @@ class App(customtkinter.CTk):
                     self.lastDataReceived = time.time()
 
                 print(received_data)
+                self.latitude = struct.unpack('d', received_data[0:8])[0]
+                self.longitude = struct.unpack('d', received_data[8:16])[0]
+                #first byte is the derivesDirection it's a char
+                self.sensDerive = struct.unpack('B', received_data[16:17])[0]
+                #next byte is the derivesDirection it's a char
+                self.forceDerive = struct.unpack('B', received_data[17:18])[0]
+                #first byte is the derivesDirection it's a char
+                self.sensTirant = struct.unpack('B', received_data[18:19])[0]
+                #next byte is the derivesDirection it's a char
+                self.forceTirant = struct.unpack('B', received_data[19:20])[0]
                 #first 2 bytes are the latitude it's a double
-                latitude = struct.unpack('d', received_data[0:8])[0]
+                #latitude = struct.unpack('d', received_data[4:12])[0]
                 #next 2 bytes are the longitude it's a double
-                longitude = struct.unpack('d', received_data[8:16])[0]
+                #longitude = struct.unpack('d', received_data[12:20])[0]
                 #next 4 bytes are the angle it's a float
-                angle = struct.unpack('f', received_data[16:20])[0]
-                print (latitude)
-                print (longitude)
+                angle = struct.unpack('f', received_data[20:24])[0]
+
+                self.displaySensDerive(self.sensDerive)
+                self.displaySensTirant(self.sensTirant)
+                self.displayPowerDerive(self.forceDerive)
+                self.displayPowerTirant(self.forceTirant)
+
+                #UPdate marker position boat
+                #remove marker on map_widget_navigation
+                #self.markerBoat.delete()
+                #self.markerBoat =  self.map_widget_navigation.set_marker(self.latitude,self.longitude, "Bato")
+                
+                #self.map_widget_navigation.set_position(self.latitude, self.longitude)
+
+                #self.map_widget_navigation.set_marker(self.map_widget_navigation, self.latitude, self.longitude)
+                
+                self.button_6.configure(state="enabled")
+                #On met à jour la position du bateau toutes les 15 coups
+                if(self.countUpdatePosition == 15):
+                    self.map_widget_navigation.set_position(self.latitude, self.longitude)
+                    self.markerBoat.delete()
+                    self.markerBoat =  self.map_widget_navigation.set_marker(self.latitude,self.longitude, "Bato")
+                    self.countUpdatePosition = 0
+                else:
+                    self.countUpdatePosition = self.countUpdatePosition + 1
+
+                #Toutes les 5 secondes on met a jour la position du bateau
+                
+
+
+             
+                print (self.latitude)
+                print (self.longitude)
                 print (angle)
+             
                 
                 
 
@@ -544,6 +639,10 @@ class App(customtkinter.CTk):
                 data = self.xbee.readline().decode().rstrip()
                 print(data)
                 self.addLog(data)
+
+    def calibrationGPS(self):
+        self.addLog("Calibration GPS en cours...")
+        self.map_widget.set_position(self.latitude, self.longitude)
     
     def synchBatonome(self):
         self.comandSerial = 3
@@ -618,6 +717,12 @@ class App(customtkinter.CTk):
             print(data)
             self.comandSerial = 1
 
+        elif self.comandSerial == 9: #Touche ENTER
+            data = struct.pack('ccc',b'D',b'2',b'\n')
+            self.xbee.write(data)
+            print(data)
+            self.comandSerial = 1
+
             
             
         self.timer = threading.Timer(1.0, self.serialEmit)
@@ -648,6 +753,9 @@ class App(customtkinter.CTk):
 
     def on_closing(self, event=0):
         self.destroy()
+        #Ferme les threads
+        self.timer.cancel()
+   
         #Bug si on clos le thread timer avant de fermer la fenêtre
         self.timer.cancel()
 
@@ -672,6 +780,10 @@ class App(customtkinter.CTk):
             elif event.keysym == "space":
                 print("Space Right pressed")
                 self.comandSerial = 8
+            elif event.keysym == "Return":
+                print("Space Right pressed")
+                self.comandSerial = 9
+            
 
 
 def thread1():
