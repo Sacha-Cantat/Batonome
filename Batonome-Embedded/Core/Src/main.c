@@ -199,6 +199,7 @@ int main(void)
   //TIM16->CCR1 = 150;
   gps_Init();
   //imu_Init();
+  navig_Init();
   zigbee_Init();
   windSensor_Init();
   gestionPWM_Init();

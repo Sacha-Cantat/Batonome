@@ -36,6 +36,7 @@ extern "C" {
 #include "zigbee.h"
 #include "gestionPWM.h"
 #include "windSensor.h"
+#include "navig.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
