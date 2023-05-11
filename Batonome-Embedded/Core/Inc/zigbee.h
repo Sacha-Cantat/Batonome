@@ -20,7 +20,8 @@ enum key_pressed{
 	RIGHT, //120 //180
 	LEFT, //110 //190
 	SPACE,
-	ENTER
+	ENTER,
+	TEMPETE
 };
 
 

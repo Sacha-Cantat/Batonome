@@ -76,7 +76,7 @@ void windSensorTask()
     	if(angle < 0.0f) angle += 360.0f; // Handle negative angles
     	batonomeData.angle = angle;
     	//printf("Angle: %.2f\n", angle); // Print angle to console
-    	HAL_Delay(500); // Delay for 500 milliseconds
+    	osDelay(500); // Delay for 500 milliseconds
     }
 }
 
@@ -87,7 +87,7 @@ void windSensor_Init()
     const osThreadAttr_t windSensor_attributes = {
       .name = "windSensor",
 	  .stack_size = 128 * 4,
-	        .priority = (osPriority_t) osPriorityNormal,
+	        .priority = (osPriority_t) osPriorityHigh,
 	      };
 
 	      windSensorHandle = osThreadNew(windSensorTask, NULL, &windSensor_attributes);

@@ -101,7 +101,7 @@ void StartDefaultTask(void *argument);
 
 PUTCHAR_PROTOTYPE
 {
-  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  //HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
   return ch;
 }
 
@@ -197,11 +197,11 @@ int main(void)
   printf("Welcome BATONOME V1.0.0\n");
   //HAL_TIM_PWM_Start(&htim16,TIM_CHANNEL_1);
   //TIM16->CCR1 = 150;
-  //gps_Init();
+  gps_Init();
   //imu_Init();
-  //zigbee_Init();
+  zigbee_Init();
   windSensor_Init();
-  //gestionPWM_Init();
+  gestionPWM_Init();
   HAL_UART_Receive_IT (&huart1, &rxDataZigbee, 1);
   HAL_UART_Receive_IT (&huart2, &rxDataGPS, 1);
 
@@ -688,7 +688,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			//HAL_UART_Receive_IT (&huart1, &rxDataZigbee, 1);
 		}
 	if (huart->Instance == USART2) {
-		//GPS_RxCpltCallback();
+		GPS_RxCpltCallback();
 			}
 }
 

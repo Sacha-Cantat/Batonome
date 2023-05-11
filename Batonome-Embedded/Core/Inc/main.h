@@ -35,6 +35,7 @@ extern "C" {
 #include "gps.h"
 #include "zigbee.h"
 #include "gestionPWM.h"
+#include "windSensor.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -94,11 +95,14 @@ typedef struct tirant {
 }Tirant;
 
 typedef struct batonomeStruct {
+	CordoGPS positionGPS;
 	Derive stateDerive;
 	Tirant stateTirant;
-	CordoGPS positionGPS;
+
     float angle;
-    int autreInformation;
+    float cap;
+    int acceleroCalib;
+
 }BatonomeStruct;
 
 
@@ -117,6 +121,7 @@ extern uint8_t UART2_rxBuffer[RX_BUFFER_SIZE] ;
 extern uint8_t rxDataZigbee;
 extern uint8_t rxDataGPS;
 
+extern int tempete;
 
 extern BatonomeStruct batonomeData;
 extern BatonomeStructConf batonomeDataConf;

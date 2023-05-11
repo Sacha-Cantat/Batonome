@@ -174,7 +174,19 @@ void batonomeControl(enum key_pressed key)
 				tirantToSet.forceTirant = POWER_0;
 				setCommandBato(REQUEST_COMMAND_TIRANT);
 			}
+	else if (key == TEMPETE)
+			{
 
+				if (tempete == 1)tempete = 0;
+				else tempete = 1;
+			}
+
+}
+
+void calibrateAccelero()
+{
+	batonomeData.acceleroCalib=1;
+	printf("test \n");
 }
 
 void processData(int sizeData)
@@ -228,6 +240,24 @@ void processData(int sizeData)
 				batonomeControl(ENTER);
 			}
 		}
+		else if(UART1_rxBuffer[0]== 'E') //Touche UP ou DOWN
+		{
+			if (UART1_rxBuffer[1]== '0')
+			{
+				batonomeControl(TEMPETE);
+			}
+
+		}
+		else if(UART1_rxBuffer[0]== 'F') //CALIB ACCELERO
+		{
+			if (UART1_rxBuffer[1]== '0')
+			{
+				calibrateAccelero();
+
+			}
+
+		}
+
 
 }
 
@@ -299,7 +329,8 @@ void ZigbeeComTask(void *argument)
  batonomeData.positionGPS.latitude = 52.46184682371661;
  batonomeData.positionGPS.longitude = 53.46184682371661;
  batonomeData.angle = 320;
- batonomeData.autreInformation=3;
+ batonomeData.cap=180;
+ batonomeData.acceleroCalib=0;
   for(;;)
   {
 

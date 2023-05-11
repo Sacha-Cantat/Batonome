@@ -13,6 +13,7 @@ import serial
 import struct
 import time
 import unittest
+import math
 
 
 
@@ -21,26 +22,46 @@ customtkinter.set_default_color_theme("blue")
 class Compass(customtkinter.CTkCanvas):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
+        self.configure(bg="#585858", bd=0, highlightthickness=0)  # Supprimer le cadre blanc
+        self.angle = 0
+        self.second_angle = 90  # Initialise la deuxième flèche à 90°
+        self.draw_compass()
 
-        # Dessinez la boussole
+    def draw_compass(self):
+        self.delete("all")
 
-  
-        self.create_oval(50, 50, 250, 250, fill="white", outline="black")
-        self.create_text(150, 70, text="N", font=("Arial", 16))
-        self.create_text(245, 150, text="E", font=("Arial", 16))
-        self.create_text(150, 240, text="S", font=("Arial", 16))
-        self.create_text(55, 150, text="W", font=("Arial", 16))
+        # Créer un cercle entourant la boussole avec un rayon légèrement plus petit
+        self.create_oval(15, 15, 185, 185, fill="#585858", outline="black", width=2)
 
-        # Dessinez la flèche
-        self.arrow = self.create_polygon(150, 100, 145, 120, 155, 120, fill="red")
+        # Ajout d'un cercle central pour la boussole
+        self.create_oval(95, 95, 105, 105, fill="black")
 
-    def set_angle(self, angle):
-        # Mettez à jour l'angle de la flèche
-        self.coords(self.arrow, 150, 100, 145, 120, 155, 120, 150, 130)
-        self.itemconfigure(self.arrow, fill="red")
-        self.rotate(angle, 150, 150)
+        # Dessiner les deux flèches séparément
+        self.arrow1 = self.draw_arrow(self.angle, "blue")
+        self.arrow2 = self.draw_arrow(self.second_angle, "green")
 
+        # Ajout des marques de direction N, S, E, W en dehors du cercle avec des coordonnées ajustées
+        self.create_text(100, 5, text="N", font=("Helvetica", 14, "bold"), fill="darkred")
+        self.create_text(100, 195, text="S", font=("Helvetica", 14, "bold"), fill="darkred")
+        self.create_text(5, 100, text="W", font=("Helvetica", 14, "bold"), fill="darkred")
+        self.create_text(195, 100, text="E", font=("Helvetica", 14, "bold"), fill="darkred")
 
+    def draw_arrow(self, angle, color):
+        rad_angle = math.radians(angle)
+        x = 100 + 85 * math.sin(rad_angle)  # Ajustement du rayon pour correspondre au cercle réduit
+        y = 100 - 85 * math.cos(rad_angle)  # Ajustement du rayon pour correspondre au cercle réduit
+        return self.create_line(100, 100, x, y, fill=color, width=4, arrow=customtkinter.LAST, arrowshape=(18, 24, 8), smooth=True)
+
+    def update_angle(self, angle):
+        self.angle = angle
+        self.delete(self.arrow1)
+        self.arrow1 = self.draw_arrow(self.angle, "blue")
+
+    def update_cap(self, angle):
+        self.second_angle = angle
+        self.delete(self.arrow2)
+        self.arrow2 = self.draw_arrow(self.second_angle, "green")
+                                      
 class App(customtkinter.CTk):
 
     APP_NAME = "Batonome GUI"
@@ -67,6 +88,7 @@ class App(customtkinter.CTk):
         self.listPortInit()
         self.com = "COM?"
         self.xbee = None
+        
         self.timer=None
         self.countLine = "1.0"
         self.latitude = 0
@@ -81,6 +103,8 @@ class App(customtkinter.CTk):
         self.sensTirant = 5
         self.forceTirant = 5
         self.countUpdatePosition = 0
+        self.valAngle = 10
+        self.lastDataReceived=0
 
         
         
@@ -284,6 +308,10 @@ class App(customtkinter.CTk):
        # Bouton pour envoyer les infos au bateau
         self.button_SendBoat = customtkinter.CTkButton(master=self.frameBaliseGPS,text="Syncronisation", command = self.synchBatonome)
         self.button_SendBoat.grid(row=5, column=0, padx=(20, 20), pady=(10, 0))
+
+        # Bouton pour envoyer les infos au bateau
+        self.button_SendBoat = customtkinter.CTkButton(master=self.frameBaliseGPS,text="Calib Accelero", command = self.calibAccelero)
+        self.button_SendBoat.grid(row=6, column=0, padx=(20, 20), pady=(10, 0))
         # ============ frame_right ============
 
         self.frame_right.grid_rowconfigure(1, weight=1)
@@ -319,7 +347,7 @@ class App(customtkinter.CTk):
 
         # Set default values
         #BERLIN
-        self.map_widget.set_address("Nantes")
+        self.map_widget.set_address("Paris")
         
         self.map_option_menu.set("Google satellite")
         self.button_COM.set("COM?")
@@ -341,20 +369,14 @@ class App(customtkinter.CTk):
         #Afficher la valeur de self.powerTirant dans frame_left_navigation avec un label :
         self.labelPowerTirant = customtkinter.CTkLabel(self.frame_left_navigation, text="Puissance de tirant : ", anchor="w")
         self.labelPowerTirant.grid(pady=(5, 20), padx=(20, 20), row=3, column=0)
+
+        self.compass = Compass(self.frame_left_navigation, width=200, height=200)
+        self.compass.grid(row=4, column=0, padx=(20, 20), pady=(10, 0))
         
 
 
-        compass = customtkinter.CTkCanvas(self.frame_right_navigation, width=300, height=300, bg="white")
-        compass.grid(row=0, column=0, padx=(0, 0), pady=(0, 0))
-
-        compass.create_oval(50, 50, 250, 250, fill="white", outline="black")
-        compass.create_text(150, 70, text="N", font=("Arial", 16))
-        compass.create_text(245, 150, text="E", font=("Arial", 16))
-        compass.create_text(150, 240, text="S", font=("Arial", 16))
-        compass.create_text(55, 150, text="W", font=("Arial", 16))
-
-        # Dessinez la flèche
-        arrow = compass.create_polygon(150, 100, 145, 120, 155, 120, fill="red")
+        
+        # ============ frame_right_navigation ============
 
         # frame right navigation
 
@@ -405,6 +427,8 @@ class App(customtkinter.CTk):
 
     def navigation_button_event(self):
         self.select_frame_by_name("navigation")
+        self.countUpdatePosition = 14
+        self.setGPSOnMapNavigation(self.latitude,self.longitude)
     
     def select_frame_by_name(self, name):
         # set button color for selected button
@@ -420,18 +444,28 @@ class App(customtkinter.CTk):
             self.frame_navigation.grid(row=0, column=1, padx=0, pady=0, sticky="nsew")
 
             #Set position on map with balise GPS
-            self.setGPSOnMapNavigation(float(self.textBaliseLat.get("0.0", "end")) , float(self.textBaliseLon.get("0.0", "end")))
-            print(float(self.textBaliseLat.get("0.0", "end")))
+            #self.setGPSOnMapNavigation(float(self.textBaliseLat.get("0.0", "end")) , float(self.textBaliseLon.get("0.0", "end")))
+           # print(float(self.textBaliseLat.get("0.0", "end")))
         else:
             self.frame_navigation.grid_forget()
 
+    def update_compass(self,angle):
+        self.compass.update_angle(angle)
+
+    def update_cap(self,angle):
+        self.compass.update_cap(angle)
+        
+    
     def search_event(self, event=None):
         self.map_widget.set_address(self.entry.get())
+
+    
+        
 
     def setGPSOnMapNavigation(self, lat, lon):
         # set current widget position and zoom
         self.map_widget_navigation.set_position(lat, lon)  # Paris, France
-        self.map_widget_navigation.set_zoom(10)
+        self.map_widget_navigation.set_zoom(18)
 
     def baliseGPS(self, event=None):
         if (self.baliseState==False):
@@ -523,7 +557,10 @@ class App(customtkinter.CTk):
     def connect(self):
         if(self.com == "COM?"):
             print("Veuillez selectionner un port COM valide")
+            self.compass.update_angle(0+self.valAngle)
+            self.compass.update_second_angle(90+self.valAngle)
             self.addLog("Veuillez selectionner un port COM valide")
+            self.valAngle = self.valAngle + 10
         else:
             self.initCOM()
             print("Connexion au port COM : " + self.com)
@@ -557,8 +594,17 @@ class App(customtkinter.CTk):
             #Si des data sont sur le port serie on affiche
             #I receive data from the serial port, data is a structure, i want to decode the data, the structure is composed by double, double, float, int
             
-            received_data = self.xbee.read(self.sizeDataToreceive)
-            #si on a pas recu de données depuis 5 secondes
+            received_data = bytearray()
+        
+            while len(received_data) < self.sizeDataToreceive:
+                byte = self.xbee.read(1)
+                
+                if byte:
+                    received_data.extend(byte)
+                else:
+                    break
+        
+        
             
 
             #si on a recu des données
@@ -567,7 +613,6 @@ class App(customtkinter.CTk):
                 if(self.firstDataReceived == False):
                     self.connectionEstablished()
                     self.firstDataReceived = True
-                    self.lastDataReceived = time.time()
 
                 print(received_data)
                 self.latitude = struct.unpack('d', received_data[0:8])[0]
@@ -585,12 +630,17 @@ class App(customtkinter.CTk):
                 #next 2 bytes are the longitude it's a double
                 #longitude = struct.unpack('d', received_data[12:20])[0]
                 #next 4 bytes are the angle it's a float
-                angle = struct.unpack('f', received_data[20:24])[0]
+                self.angle = struct.unpack('f', received_data[20:24])[0]
+                self.cap = struct.unpack('f', received_data[24:28])[0]
+                self.callibAccelero = struct.unpack('B', received_data[28:29])[0]
 
                 self.displaySensDerive(self.sensDerive)
                 self.displaySensTirant(self.sensTirant)
                 self.displayPowerDerive(self.forceDerive)
                 self.displayPowerTirant(self.forceTirant)
+                self.update_cap(self.cap)
+                print(self.callibAccelero)
+                print(self.cap)
 
                 #UPdate marker position boat
                 #remove marker on map_widget_navigation
@@ -611,6 +661,9 @@ class App(customtkinter.CTk):
                 else:
                     self.countUpdatePosition = self.countUpdatePosition + 1
 
+                #MAJ angle du vent
+                self.update_compass(self.angle)
+
                 #Toutes les 5 secondes on met a jour la position du bateau
                 
 
@@ -618,17 +671,11 @@ class App(customtkinter.CTk):
              
                 print (self.latitude)
                 print (self.longitude)
-                print (angle)
-             
-                
-                
+                print (self.angle)
 
-                
-                
-                self.lastDataReceived = time.time()
-                
-
-            if (time.time() - self.lastDataReceived) > 5:
+            else:
+               
+                self.firstDataReceived = False
                 print("Perte de connexion avec le bateau")
                 self.addLog("Perte de connexion avec le bateau")
                 self.connectionLost()
@@ -642,7 +689,13 @@ class App(customtkinter.CTk):
 
     def calibrationGPS(self):
         self.addLog("Calibration GPS en cours...")
-        self.map_widget.set_position(self.latitude, self.longitude)
+        self.map_widget.set_positionl:(self.latitude, self.longitude)
+        self.map_widget.set_zoom(15)
+
+    def calibAccelero(self):
+        self.addLog("Calibration Accelero en cours...")
+        self.comandSerial = 11 #send request accelerometer calibration
+
     
     def synchBatonome(self):
         self.comandSerial = 3
@@ -723,6 +776,18 @@ class App(customtkinter.CTk):
             print(data)
             self.comandSerial = 1
 
+        elif self.comandSerial == 10: #Touche ENTER
+            data = struct.pack('ccc',b'E',b'0',b'\n')
+            self.xbee.write(data)
+            print(data)
+            self.comandSerial = 1
+
+        elif self.comandSerial == 11: #CALIB ACCELERO
+            data = struct.pack('ccc',b'F',b'0',b'\n')
+            self.xbee.write(data)
+            print(data)
+            self.comandSerial = 1
+
             
             
         self.timer = threading.Timer(1.0, self.serialEmit)
@@ -747,7 +812,7 @@ class App(customtkinter.CTk):
 
     def initCOM(self):
         # Ouvre la liaison série sur le port sélectionné à une vitesse de 9600 bauds
-        self.xbee = serial.Serial(self.com, 9600)
+        self.xbee = serial.Serial(self.com, 9600,timeout=5)
     
     
 
@@ -783,6 +848,9 @@ class App(customtkinter.CTk):
             elif event.keysym == "Return":
                 print("Space Right pressed")
                 self.comandSerial = 9
+            elif event.keysym == "t":
+                print("t Right pressed")
+                self.comandSerial = 10
             
 
 
