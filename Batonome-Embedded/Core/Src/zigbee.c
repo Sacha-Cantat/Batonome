@@ -186,7 +186,8 @@ void batonomeControl(enum key_pressed key)
 void calibrateAccelero()
 {
 	batonomeData.acceleroCalib=1;
-	printf("test \n");
+	offset = batonomeData.cap;
+	//printf("test \n");
 }
 
 void processData(int sizeData)

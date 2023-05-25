@@ -42,7 +42,7 @@ void windSensorTask(void * argument)
         //printf("Angle: %f\n", angle);
 
         batonomeData.angle = angle;
-        osDelay(500); // Delay for 500 milliseconds
+        vTaskDelay(500);
     }
 }
 
@@ -54,6 +54,12 @@ void windSensor_Init()
         .stack_size = 128 * 4,
         .priority = (osPriority_t) osPriorityHigh,
     };
+
+    batonomeData.positionGPS.latitude = 52.46184682371661;
+    batonomeData.positionGPS.longitude = 53.46184682371661;
+    batonomeData.angle = 320;
+    batonomeData.cap=180;
+    batonomeData.acceleroCalib=0;
 
     windSensorHandle = osThreadNew(windSensorTask, NULL, &windSensor_attributes);
 }

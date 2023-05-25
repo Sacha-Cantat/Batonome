@@ -52,6 +52,10 @@ bool isAngleNearAngle(double angle1,double angle2, double interval) {
     return ( positive(angle2-angle1)<interval || positive(angle2-angle1) > (360-interval) );
 }
 
+double toRadians(double degrees) {
+    return degrees * M_PI / 180.0;
+}
+
 bool arePointsClose(CordoGPS point1, CordoGPS point2, double threshold) {
     double lat1 = toRadians(point1.latitude);
     double lon1 = toRadians(point1.longitude);
@@ -246,14 +250,23 @@ void setVoile(double direction_vent) {
 
 void navigManagementTask()
 {
-	printf("NAVIG management task is launched\n");
+	//printf("NAVIG management task is launched\n");
 	double direction_recherchee_task =0;
+	int delayNav = 0;
 	for(;;)
 	  {
-		direction_recherchee_task = algoNavigation((double) batonomeData.angle,(double) batonomeData.cap, batonomeData.positionGPS,  batonomeDataConf.balise );
+		delayNav = delayNav+1;
+		if (delayNav > 8)
+		{
+			direction_recherchee_task = algoNavigation((double) batonomeData.angle,(double) batonomeData.cap, batonomeData.positionGPS,  batonomeDataConf.balise );
+			delayNav =0;
+		}
 		setSafran((double) batonomeData.cap, direction_recherchee_task);
 		setVoile((double) batonomeData.angle);
+		vTaskDelay(250);
+		//osDelay(250);
 	  }
+
 }
 
 
@@ -264,7 +277,7 @@ void navig_Init()
 	osThreadId_t navigHandle;
 	const osThreadAttr_t navig_attributes = {
 	  .name = "navig",
-	  .stack_size = 128 * 4,
+	  .stack_size = 256 * 4,
 	  .priority = (osPriority_t) osPriorityHigh
 	};
 

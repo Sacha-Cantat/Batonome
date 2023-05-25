@@ -124,6 +124,8 @@ extern uint8_t rxDataGPS;
 
 extern int tempete;
 
+extern int offset;
+
 extern BatonomeStruct batonomeData;
 extern BatonomeStructConf batonomeDataConf;
 
