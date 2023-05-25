@@ -134,6 +134,8 @@ extern Derive deriveState;
 
 extern Tirant tirantToSet;
 extern Tirant tirantState;
+
+extern float valVent[10];
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

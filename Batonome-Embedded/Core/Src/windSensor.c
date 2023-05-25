@@ -39,8 +39,19 @@ void windSensorTask(void * argument)
         float angle = ((float)raw_angle / 4096.0f) * 360.0f; // Calculate angle
         angle = fabs(angle);
         angle = fmodf(angle, 360.0f); // Wrap angle between 0 and 360
+    	angle = fmod(angle+270,360);
+
         //printf("Angle: %f\n", angle);
 
+       // batonomeData.angle = angle;
+       /* int totalVent =0;
+        for (int i=9; i>0;i--){
+        	valVent[i] = valVent[i-1];
+        	totalVent += valVent[i-1];
+        }
+        valVent[0] = angle;
+        totalVent += angle;
+        totalVent = totalVent/10;*/
         batonomeData.angle = angle;
         vTaskDelay(500);
     }

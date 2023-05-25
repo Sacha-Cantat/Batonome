@@ -724,19 +724,23 @@ class App(customtkinter.CTk):
             
 
         elif self.comandSerial == 3:
-            #Aujourd'hui on doit envoyer 4 coordonnés GPS pour faire le tracé
-            data = struct.pack('ccddddddddddddddddddddddc',b'B', b'0',self.baliseGPSCordinate[0],self.baliseGPSCordinate[1],self.listeGpsPoints[0][0], self.listeGpsPoints[0][1],self.listeGpsPoints[1][0], self.listeGpsPoints[1][1], self.listeGpsPoints[2][0], self.listeGpsPoints[2][1], self.listeGpsPoints[3][0], self.listeGpsPoints[3][1], self.listeGpsPoints[4][0], self.listeGpsPoints[4][1],self.listeGpsPoints[5][0], self.listeGpsPoints[5][1], self.listeGpsPoints[6][0], self.listeGpsPoints[6][1], self.listeGpsPoints[7][0], self.listeGpsPoints[7][1],self.listeGpsPoints[8][0], self.listeGpsPoints[8][1],self.listeGpsPoints[9][0], self.listeGpsPoints[9][1], b'\n')
+            #Aujourd'hui on doit envoyer 10 coordonnés GPS pour faire le tracé
+            #data = struct.pack('ccddddddddddddddddddddddc',b'B', b'0',self.baliseGPSCordinate[0],self.baliseGPSCordinate[1],self.listeGpsPoints[0][0], self.listeGpsPoints[0][1],self.listeGpsPoints[1][0], self.listeGpsPoints[1][1], self.listeGpsPoints[2][0], self.listeGpsPoints[2][1], self.listeGpsPoints[3][0], self.listeGpsPoints[3][1], self.listeGpsPoints[4][0], self.listeGpsPoints[4][1],self.listeGpsPoints[5][0], self.listeGpsPoints[5][1], self.listeGpsPoints[6][0], self.listeGpsPoints[6][1], self.listeGpsPoints[7][0], self.listeGpsPoints[7][1],self.listeGpsPoints[8][0], self.listeGpsPoints[8][1],self.listeGpsPoints[9][0], self.listeGpsPoints[9][1], b'\n')
+            data = struct.pack('ccddc',b'B', b'0',self.baliseGPSCordinate[0],self.baliseGPSCordinate[1], b'\n')
+
             # dddddddddddddddddddd   self.listeGpsPoints[5][0], self.listeGpsPoints[5][1], self.listeGpsPoints[6][0], self.listeGpsPoints[6][1], self.listeGpsPoints[7][0], self.listeGpsPoints[7][1],self.listeGpsPoints[8][0], self.listeGpsPoints[8][1],self.listeGpsPoints[9][0], self.listeGpsPoints[9][1],b'\n')
             print(str(type(data)))
             print(str(len(data)))
             print(self.listeGpsPoints)
-            if (data.find('\n') < 2):
-                self.xbee.write(data)
-                self.addLog("Configuration envoyée au bateau")
-            else : 
-                self.addLog("Erreur de transmission des données, retour chariot dans la trame")
+            self.xbee.write(data)
+            self.addLog("Configuration envoyée au bateau")
+            # if (data.find('\n') < 2):
+            #     self.xbee.write(data)
+            #     self.addLog("Configuration envoyée au bateau")
+            # else : 
+            #     self.addLog("Erreur de transmission des données, retour chariot dans la trame")
             print(data)
-            self.comandSerial = 3
+            self.comandSerial = 1
         
         elif self.comandSerial == 4: #Touche RIGHT
             data = struct.pack('ccc',b'C',b'0',b'\n')

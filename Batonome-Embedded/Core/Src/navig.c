@@ -111,7 +111,7 @@ double algoNavigation(double direction_vent, double direction_bateau, CordoGPS p
     else {
         direction_recherchee = direction_bouee;
     }
-    printf("%f, %f, %f / %f, %d\n",direction_bouee,direction_vent_nord,direction_bateau,direction_recherchee ,vent_face_avant) ;
+    //printf("%f, %f, %f / %f, %d\n",direction_bouee,direction_vent_nord,direction_bateau,direction_recherchee ,vent_face_avant) ;
     return direction_recherchee;
 }
 
@@ -123,14 +123,15 @@ double algoNavigation(double direction_vent, double direction_bateau, CordoGPS p
  *  Rien : tourne le safran dans le bon sens avec +/- de force
  ******/
 void setSafran(double direction_bateau, double direction_recherchee){
+	direction_bateau = 360 - direction_bateau;
     double angleRelatif = fmod(direction_recherchee-direction_bateau+180,360)-180 ;
     bool directionSafran ;
     if ( angleRelatif > 0 ) {
       // On veut aller a droite -> 100
-      directionSafran = true;
+      directionSafran = false;
     } else {
       // On veut aller a gauche -> 200
-      directionSafran = false;
+      directionSafran = true;
     }
 
     switch((int) positive(angleRelatif)) {
@@ -250,21 +251,26 @@ void setVoile(double direction_vent) {
 
 void navigManagementTask()
 {
+	batonomeData.angle = 150; //Vendt
+	batonomeData.cap = 150; //ANgle par raaport au nord
 	//printf("NAVIG management task is launched\n");
 	double direction_recherchee_task =0;
-	int delayNav = 0;
+	int delayNav = 9;
 	for(;;)
 	  {
-		delayNav = delayNav+1;
-		if (delayNav > 8)
+		if (batonomeDataConf.balise.latitude>0)
 		{
-			direction_recherchee_task = algoNavigation((double) batonomeData.angle,(double) batonomeData.cap, batonomeData.positionGPS,  batonomeDataConf.balise );
-			delayNav =0;
+			delayNav = delayNav+1;
+			if (delayNav > 8)
+			{
+				direction_recherchee_task = algoNavigation((double) batonomeData.angle,(double) batonomeData.cap, batonomeData.positionGPS,  batonomeDataConf.balise );
+				delayNav =0;
+			}
+			setSafran((double) batonomeData.cap, direction_recherchee_task);
+			setVoile((double) batonomeData.angle);
+			vTaskDelay(250);
+			//osDelay(250);
 		}
-		setSafran((double) batonomeData.cap, direction_recherchee_task);
-		setVoile((double) batonomeData.angle);
-		vTaskDelay(250);
-		//osDelay(250);
 	  }
 
 }
@@ -282,4 +288,16 @@ void navig_Init()
 	};
 
 	navigHandle = osThreadNew(navigManagementTask, NULL, &navig_attributes);
+
+	TIM1->CCR1 = 150 ;
+	TIM1->CCR4 = 160;
+
+	HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_4);
+
+	/*batonomeData.positionGPS.latitude = 47.248803;
+	batonomeData.positionGPS.longitude =-1.548719 ;
+
+	batonomeDataConf.balise.latitude = 47.248945;
+	batonomeDataConf.balise.longitude =  -1.548231;*/
 }
