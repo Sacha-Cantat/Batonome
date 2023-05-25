@@ -197,9 +197,9 @@ int main(void)
   printf("Welcome BATONOME V1.0.0\n");
   //HAL_TIM_PWM_Start(&htim16,TIM_CHANNEL_1);
   //TIM16->CCR1 = 150;
-  gps_Init();
+  //gps_Init();
   //imu_Init();
-  navig_Init();
+  //navig_Init();
   zigbee_Init();
   windSensor_Init();
   gestionPWM_Init();
@@ -323,7 +323,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00101319;
+  hi2c1.Init.Timing = 0x0000E14;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -338,7 +338,7 @@ static void MX_I2C1_Init(void)
 
   /** Configure Analogue filter
   */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_DISABLE) != HAL_OK)
   {
     Error_Handler();
   }

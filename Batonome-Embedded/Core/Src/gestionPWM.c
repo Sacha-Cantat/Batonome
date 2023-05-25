@@ -101,8 +101,8 @@ void tempeteEnCours(int stateTempete)
 
 void gestionPWM_Task(void *argument)
 {
-	static int valPWMDerive=150;
-	static int valPWMTirant= 150;
+	static int valPWMDerive=133;
+	static int valPWMTirant= 113;
 	for(;;)
 	{
         switch (stateCommandBato)
