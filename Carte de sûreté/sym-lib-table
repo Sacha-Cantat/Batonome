@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name MCP6242-E_P)(type Legacy)(uri ${KIPRJMOD}/lib_kicad/MCP6242-E_P.lib)(options "")(descr ""))
+  (lib (name CD4051BE)(type Legacy)(uri ${KIPRJMOD}/lib_kicad/CD4051BE.lib)(options "")(descr ""))
+)
