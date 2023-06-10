@@ -204,55 +204,55 @@ void setVoile(double direction_vent) {
   switch((int) positive(direction_vent)) {
     case 0 ... 35 :
         // Vent debout : valeur largue
-		TIM1->CCR4= 125;
+		TIM1->CCR4= 170;
       break;
     case 325 ... 360:
-		TIM1->CCR4= 125;
+		TIM1->CCR4= 170;
       break;
 
     case 36 ... 61 :
         // Bon plein : 113voir un peu plus
-		TIM1->CCR4= 114;
+		TIM1->CCR4= 180;// 114;
       break;
     case 299 ... 324 :
-		TIM1->CCR4= 114;
+		TIM1->CCR4= 180;
       break;
 
     case 62 ...90 :
       	// Petit Largue 118
-		TIM1->CCR4= 118;
+		TIM1->CCR4= 176;
       break;
     case 270 ... 298 :
-		TIM1->CCR4= 118;
+		TIM1->CCR4= 176;
       break;
 
     case 91 ... 115 :
     	// Largue 125
-		TIM1->CCR4= 125;
+		TIM1->CCR4= 169;
       break;
     case 245 ... 269 :
-		TIM1->CCR4= 125;
+		TIM1->CCR4= 169;
       break;
 
     case 116 ... 158 :
       	// Grand Largue 140
-		TIM1->CCR4= 140;
+		TIM1->CCR4= 154;
       break;
     case 202 ... 244 :
-		TIM1->CCR4= 140;
+		TIM1->CCR4= 154;
       break;
 
     case 159 ... 201 :
     	// Vent arriere 160
-		TIM1->CCR4= 160;
+		TIM1->CCR4= 140;
       break;
   }
 }
 
 void navigManagementTask()
 {
-	batonomeData.angle = 150; //Vendt
-	batonomeData.cap = 150; //ANgle par raaport au nord
+	//batonomeData.angle = 150; //Vendt
+	//batonomeData.cap = 150; //ANgle par raaport au nord
 	//printf("NAVIG management task is launched\n");
 	double direction_recherchee_task =0;
 	int delayNav = 9;
@@ -290,7 +290,7 @@ void navig_Init()
 	navigHandle = osThreadNew(navigManagementTask, NULL, &navig_attributes);
 
 	TIM1->CCR1 = 150 ;
-	TIM1->CCR4 = 160;
+	TIM1->CCR4 = 180;
 
 	HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_4);

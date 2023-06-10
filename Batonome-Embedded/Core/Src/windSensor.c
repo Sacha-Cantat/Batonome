@@ -66,8 +66,10 @@ void windSensor_Init()
         .priority = (osPriority_t) osPriorityHigh,
     };
 
-    batonomeData.positionGPS.latitude = 52.46184682371661;
-    batonomeData.positionGPS.longitude = 53.46184682371661;
+    batonomeData.positionGPS.latitude = 0;
+    batonomeData.positionGPS.longitude = 0;
+
+
     batonomeData.angle = 320;
     batonomeData.cap=180;
     batonomeData.acceleroCalib=0;
